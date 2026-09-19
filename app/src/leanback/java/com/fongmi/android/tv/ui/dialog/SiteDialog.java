@@ -319,7 +319,9 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
                 decor.getLocationOnScreen(decorLoc);
                 android.util.DisplayMetrics dm = new android.util.DisplayMetrics();
                 try { window.getWindowManager().getDefaultDisplay().getRealMetrics(dm); } catch (Exception ignored) { }
-                android.util.DisplayMetrics dmApp = getResources().getDisplayMetrics();
+                // r4.1: getResources() 是 Fragment 方法, showDirect 路径 Fragment 未 attach → IllegalStateException.
+                // 改用 decor.getContext() (showDirect 的 dialog 一定有 context).
+                android.util.DisplayMetrics dmApp = decor.getContext().getResources().getDisplayMetrics();
                 int[] actLoc = new int[2];
                 int actW = 0;
                 if (getDialogActivity() != null && getDialogActivity().getWindow() != null) {
@@ -330,6 +332,11 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
                     ResUtil.getScreenWidth(), params.width, decor.getWidth(), loc[0], binding.getRoot().getWidth());
                 log("metrics diag: realW=%s appW=%s density=%s actDecorX=%s actDecorW=%s decorX=%s",
                     dm.widthPixels, dmApp.widthPixels, dmApp.density, actLoc[0], actW, decorLoc[0]);
+                // r5: 右侧 padding 失效取证 (层级 dump 证实容器右缘穿透 root 右 padding 24px)
+                log("padding diag: recycler L=%s T=%s R=%s B=%s root R=%s",
+                    binding.recycler.getPaddingLeft(), binding.recycler.getPaddingTop(),
+                    binding.recycler.getPaddingRight(), binding.recycler.getPaddingBottom(),
+                    binding.getRoot().getPaddingRight());
             } catch (Exception e) {
                 log("diag fail: %s", e);
             }
