@@ -56,7 +56,19 @@ public class DLNARendererService extends AndroidUpnpServiceImpl implements Servi
     private boolean bound;
 
     public static void start(Context context) {
-        context.startService(new Intent(context, DLNARendererService.class));
+        // 2026-09-19 crash fix: adb 非交互启动时 uid 仍 cached, startService 抛
+        // IllegalStateException (Not allowed to start service ... app is in background)
+        // → App 连环 crash. 本服务 onCreate 即 startForeground, 依法用 startForegroundService;
+        // 极端环境再兜底 try-catch (DLNA 非核心功能, 失败静默).
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(new Intent(context, DLNARendererService.class));
+            } else {
+                context.startService(new Intent(context, DLNARendererService.class));
+            }
+        } catch (Exception e) {
+            com.github.catvod.crawler.SpiderDebug.log(e);
+        }
     }
 
     public static void stop(Context context) {
