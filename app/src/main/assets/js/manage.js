@@ -772,7 +772,7 @@ function loadLoginStateManage(force = false) {
         loadLoginStateTree('app');
         loadLoginStateTree('sdcard');
         renderLoginStateManage();
-    }, '登录态加载失败');
+    }, '网盘与登录加载失败');
 }
 
 function renderLoginStateManage() {
@@ -785,7 +785,7 @@ function renderLoginStateManage() {
     $('#loginStateSummary').text(`${data.learning ? '学习中' : '未学习'} · 已确认 ${loginStatePaths.length} · 待确认 ${pendingItems.length} · 最近 ${findingsTotal}${missing ? ` · 缺失 ${missing}` : ''}`);
     $('#loginStateLearnBtn').text(data.learning ? '完成学习' : '开始学习');
     $('#loginStateRevealBtn').prop('disabled', pendingItems.length === 0).text(pendingItems.length ? `显示待确认(${pendingItems.length})` : '显示待确认');
-    $('#loginStateLearned').html(loginStatePathStates().map(item => buildLoginStateRow(item, 'selected')).join('') || '<div class="empty-state compact">未确认任何登录态路径</div>');
+    $('#loginStateLearned').html(loginStatePathStates().map(item => buildLoginStateRow(item, 'selected')).join('') || '<div class="empty-state compact">未确认任何网盘与登录路径</div>');
     $('#loginStatePending').html(pendingItems.map(item => buildLoginStateRow(item, 'pending')).join('') || '<div class="empty-state compact">暂无待确认项</div>');
     const findingsMore = findingsTotal > findings.length ? `<div class="empty-state compact">结果较多，仅显示前 ${findings.length} 条；完整结果仍保留在设备中</div>` : '';
     $('#loginStateFindings').html((findings.map(item => buildLoginStateRow(item, 'finding')).join('') + findingsMore) || '<div class="empty-state compact">暂无最近学习结果</div>');
@@ -943,8 +943,8 @@ function toggleLoginStateLearning() {
         loadLoginStateTree('app');
         loadLoginStateTree('sdcard');
         renderLoginStateManage();
-        warnToast(learning ? '登录态学习完成' : '已开始登录态学习');
-    }, '登录态学习失败');
+        warnToast(learning ? '网盘与登录学习完成' : '已开始网盘与登录学习');
+    }, '网盘与登录学习失败');
 }
 
 function addLoginStatePath(path) {
@@ -971,8 +971,8 @@ function saveLoginStatePaths() {
         loadLoginStateTree('app');
         loadLoginStateTree('sdcard');
         renderLoginStateManage();
-        warnToast('登录态路径已保存');
-    }, '登录态路径保存失败');
+        warnToast('网盘与登录路径已保存');
+    }, '网盘与登录路径保存失败');
 }
 
 function openLoginStateFile(path) {
@@ -989,7 +989,7 @@ function openLoginStateFile(path) {
         renderLoginStatePreviewContent(data);
         openDialog('loginStateEditorDialog');
         if (currentLoginStateEditable) setTimeout(() => $('#loginStateContent').trigger('focus'), 80);
-    }, '登录态文件读取失败');
+    }, '网盘与登录文件读取失败');
 }
 
 function saveLoginStateFile() {
@@ -1004,8 +1004,8 @@ function saveLoginStateFile() {
         renderLoginStatePreviewContent(data);
         addLoginStatePath(data.path || currentLoginStatePath);
         saveLoginStatePaths();
-        warnToast('登录态文件已保存');
-    }, '登录态文件保存失败');
+        warnToast('网盘与登录文件已保存');
+    }, '网盘与登录文件保存失败');
     closeDialog('loginStateEditorDialog');
 }
 
@@ -1085,7 +1085,7 @@ function loadLoginStateTree(path, callback) {
         loginStateTreeCache[path] = data || { path, items: [] };
         renderLoginStateManage();
         if (callback) callback(loginStateTreeCache[path]);
-    }, '登录态目录加载失败');
+    }, '网盘与登录目录加载失败');
 }
 function toggleLoginStateTree(path) {
     path = loginStateNormalize(path);
