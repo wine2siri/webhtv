@@ -309,6 +309,14 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
         params.gravity = Gravity.CENTER;
         window.setAttributes(params);
+        // 诊断: 窗口布局后自报真实位置 (排查左右边距 24px 不对称根因)
+        View decor = window.getDecorView();
+        decor.post(() -> {
+            int[] loc = new int[2];
+            binding.getRoot().getLocationOnScreen(loc);
+            log("window diag: screenWidth=%s paramW=%s decorW=%s rootX=%s rootW=%s",
+                ResUtil.getScreenWidth(), params.width, decor.getWidth(), loc[0], binding.getRoot().getWidth());
+        });
     }
 
     private void runAfterFirstPreDraw(String label, Runnable action) {
