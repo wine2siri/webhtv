@@ -188,7 +188,7 @@ public class VodConfig extends BaseConfig {
         this.wall = Json.safeString(object, "wallpaper");
         Config temp = Config.find(wall, config.getName(), WALL).save();
         boolean sync = WallConfig.get().needSync(wall);
-        if (sync) WallConfig.get().config(temp.update());
+        if (sync) WallConfig.load(temp.update(), new Callback());
     }
 
     private void initSite(Config config, JsonObject object) {
