@@ -1,7 +1,12 @@
 import os
+import time
 import requests
 from importlib.machinery import SourceFileLoader
 import json
+
+RETRY_MAX = 3
+RETRY_DELAY = 2
+TIMEOUT = 10
 
 
 def spider(cache, api, file_name=None):
@@ -14,7 +19,17 @@ def spider(cache, api, file_name=None):
 
 def download(path, api):
     if api.startswith('http'):
-        writeFile(path, redirect(api).content)
+        last_error = None
+        for attempt in range(1, RETRY_MAX + 1):
+            try:
+                writeFile(path, redirect(api).content)
+                return
+            except Exception as e:
+                last_error = e
+                print('[py-download] attempt %d/%d failed for %s: %s' % (attempt, RETRY_MAX, api, e))
+                if attempt < RETRY_MAX:
+                    time.sleep(RETRY_DELAY * attempt)
+        raise last_error
     else:
         writeFile(path, str.encode(api))
 
@@ -25,7 +40,7 @@ def writeFile(path, content):
 
 
 def redirect(url):
-    rsp = requests.get(url, allow_redirects=False, verify=False)
+    rsp = requests.get(url, allow_redirects=False, verify=False, timeout=TIMEOUT)
     if 'Location' in rsp.headers:
         return redirect(rsp.headers['Location'])
     else:
