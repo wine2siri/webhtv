@@ -62,6 +62,8 @@
     <string name="play_change">Change</string>
     <string name="play_short_display">Short</string>
     <string name="play_search">Search</string>
+    <string name="detail_episode_name">Episode Title</string>
+    <string name="detail_change_source">Change Source</string>
     <string name="play_fullscreen">Fullscreen</string>
     <string name="play_exit_fullscreen">Exit full</string>
     <string name="play_invert">Invert</string>

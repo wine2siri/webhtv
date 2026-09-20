@@ -36,6 +36,10 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.graphics.TextPaint;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -665,7 +669,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mBinding.keep.setOnClickListener(view -> onKeep());
         mBinding.search.setOnClickListener(view -> onSearch());
         mBinding.video.setOnClickListener(view -> onVideo());
-        mBinding.content.setOnClickListener(view -> onContent());
+        mBinding.contentText.setOnClickListener(view -> onContent());
         mBinding.control.action.text.setOnClickListener(this::onTrack);
         mBinding.control.action.audio.setOnClickListener(this::onTrack);
         mBinding.control.action.video.setOnClickListener(this::onTrack);
@@ -1151,14 +1155,15 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     }
 
     private void setText(Vod item) {
-        mBinding.content.setTag(item.getContent());
+        mBinding.contentText.setTag(item.getContent());
         setDetailLyrics(item.getContent());
-        // r7: 简介默认展开在按钮行上方 (与 OK影视一致), 全量仍点"简介"按钮弹窗
+        // r8: 简介截断显示+尾部"展开"提示, 点击文本弹全量 (原"简介"按钮已移除)
         if (TextUtils.isEmpty(item.getContent())) {
             mBinding.contentText.setVisibility(View.GONE);
         } else {
             mBinding.contentText.setText(item.getContent());
             mBinding.contentText.setVisibility(View.VISIBLE);
+            mBinding.contentText.post(() -> appendExpandHint(item.getContent()));
         }
         setText(mBinding.year, R.string.detail_year, item.getYear());
         setText(mBinding.area, R.string.detail_area, item.getArea());
@@ -1231,7 +1236,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         if (result.hasArtwork() && !shouldKeepPushArtwork()) setArtwork(result.getArtwork());
         else applyPlaybackArtwork(getPlaybackEpisode());
         if (result.hasDesc()) {
-            mBinding.content.setTag(result.getDesc());
+            mBinding.contentText.setTag(result.getDesc());
             setPlaybackLyrics(result.getDesc());
         }
         applyAudioQueueMetadata(getPlaybackEpisode());
@@ -1550,8 +1555,22 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     }
 
     private void onContent() {
-        if (mBinding.content.getTag() == null) return;
-        ContentDialog.create().content(mBinding.content.getTag().toString()).show(this);
+        if (mBinding.contentText.getTag() == null) return;
+        ContentDialog.create().content(mBinding.contentText.getTag().toString()).show(this);
+    }
+
+    // r8: 简介被截断时, 尾部追加" 展开"高亮提示 (点击文本任意处弹全量简介)
+    private void appendExpandHint(String content) {
+        TextView view = mBinding.contentText;
+        if (view.getLayout() == null || TextUtils.isEmpty(content)) return;
+        if (view.getLayout().getEllipsisCount(view.getLayout().getLineCount() - 1) == 0) return;
+        TextPaint paint = view.getPaint();
+        float maxWidth = view.getWidth() - view.getPaddingLeft() - view.getPaddingRight();
+        float hintWidth = paint.measureText(" ...... 展开");
+        CharSequence head = TextUtils.ellipsize(content, paint, maxWidth * view.getMaxLines() - hintWidth, TextUtils.TruncateAt.END);
+        SpannableString span = new SpannableString(head + " 展开");
+        span.setSpan(new ForegroundColorSpan(0xFFFFB300), span.length() - 2, span.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        view.setText(span);
     }
 
     private void onAudioLyricsSeek(long positionMs) {
@@ -3704,7 +3723,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mBinding.progressLayout.showContent();
         mBinding.name.setText(getName());
         if (!getContent().isEmpty()) {
-            mBinding.content.setTag(getContent());
+            mBinding.contentText.setTag(getContent());
             setDetailLyrics(getContent());
         }
         if (!getPic().isEmpty()) setArtwork(getPic());

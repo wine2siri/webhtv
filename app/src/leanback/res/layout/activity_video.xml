@@ -23,7 +23,7 @@
         android:focusableInTouchMode="true"
         android:foreground="@drawable/selector_video"
         android:nextFocusLeft="@id/video"
-        android:nextFocusRight="@id/content"
+        android:nextFocusRight="@id/content_text"
         android:nextFocusUp="@id/video"
         android:nextFocusDown="@id/flag">
 
@@ -650,12 +650,12 @@
         android:layout_marginEnd="24dp"
         android:ellipsize="end"
         android:maxLines="2"
-        android:nextFocusDown="@id/content"
+        android:nextFocusDown="@id/content_text"
         android:textColor="@color/white"
         android:textSize="16sp"
         tools:text="演員：FongMi" />
 
-    <!-- r7: 简介默认展开 (用户要求与 OK影视一致, 显示在按钮行上方) -->
+    <!-- r8: 简介截断显示, 尾部"展开"提示, 点击弹全量 (原"简介"按钮已移除) -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/content_text"
         android:layout_width="match_parent"
@@ -664,8 +664,19 @@
         android:layout_alignStart="@+id/name"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
+        android:background="@drawable/selector_video_item"
+        android:clickable="true"
         android:ellipsize="end"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
         android:maxLines="2"
+        android:nextFocusDown="@id/shortDisplay"
+        android:nextFocusUp="@id/actor"
+        android:paddingStart="2dp"
+        android:paddingEnd="2dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
         android:textColor="@color/white_70"
         android:textSize="14sp"
         tools:text="簡介：本片講述一個關於勇氣與冒險的故事……" />
@@ -679,24 +690,6 @@
         android:orientation="horizontal">
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/content"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/selector_video_item"
-            android:drawablePadding="6dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center"
-            android:nextFocusUp="@id/actor"
-            android:nextFocusDown="@id/flag"
-            android:singleLine="true"
-            android:text="@string/detail_desc"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            app:drawableStartCompat="@drawable/ic_detail_desc" />
-
-        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/shortDisplay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -706,10 +699,10 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusUp="@id/content_text"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
-            android:text="@string/play_short_display"
+            android:text="@string/detail_episode_name"
             android:textColor="@color/white"
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_short_display" />
@@ -724,10 +717,10 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center"
-            android:nextFocusUp="@id/actor"
+            android:nextFocusUp="@id/content_text"
             android:nextFocusDown="@id/flag"
             android:singleLine="true"
-            android:text="@string/play_search"
+            android:text="@string/detail_change_source"
             android:textColor="@color/white"
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_action_search" />
