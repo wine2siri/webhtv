@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <!-- deep-space diagonal gradient -->
+    <path android:pathData="M0,0 L512,0 L512,512 L0,512 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="512"
+                android:endY="512">
+                <item android:offset="0.0" android:color="#FF101B33" />
+                <item android:offset="0.55" android:color="#FF0A1122" />
+                <item android:offset="1.0" android:color="#FF05080F" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- subtle aurora glow behind the play key -->
+    <path android:pathData="M256,0 C383,0 486,103 486,230 C486,357 383,460 256,460 C129,460 26,357 26,230 C26,103 129,0 256,0 Z"
+        android:fillAlpha="0.16">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="256"
+                android:centerY="210"
+                android:gradientRadius="250">
+                <item android:offset="0.0" android:color="#FF3E6BB4" />
+                <item android:offset="1.0" android:color="#003E6BB4" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- faint tech grid lines -->
+    <path
+        android:pathData="M0,384 L512,384 M0,416 L512,416"
+        android:strokeColor="#14243F"
+        android:strokeWidth="1.5" />
+</vector>
