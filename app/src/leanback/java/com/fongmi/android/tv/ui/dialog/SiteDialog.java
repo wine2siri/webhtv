@@ -231,9 +231,12 @@ public class SiteDialog extends BaseAlertDialog implements SiteAdapter.OnClickLi
     }
 
     private void setRootWidth() {
+        // r6 fix: 曾把 root 钉死为 0.8×屏宽=1536px, 而 applyWindow 已设窗口 1536 且 decor 背景每边占 32px,
+        // root 从 content 左缘起排 1536 → 右缘超窗 32px 被裁 → 视觉右侧留白少 24px (24px 不对称真根因).
+        // root 回归 XML 的 match_parent, 跟随窗口内容区自动对称.
         ViewGroup.LayoutParams params = binding.getRoot().getLayoutParams();
-        if (params == null) params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.width = (int) (ResUtil.getScreenWidth() * getWidth());
+        if (params == null) return;
+        params.width = ViewGroup.LayoutParams.MATCH_PARENT;
         binding.getRoot().setLayoutParams(params);
     }
 
