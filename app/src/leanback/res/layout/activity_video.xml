@@ -655,6 +655,21 @@
         android:textSize="16sp"
         tools:text="演員：FongMi" />
 
+    <!-- r7: 简介默认展开 (用户要求与 OK影视一致, 显示在按钮行上方) -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/content_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/actor"
+        android:layout_alignStart="@+id/name"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/white_70"
+        android:textSize="14sp"
+        tools:text="簡介：本片講述一個關於勇氣與冒險的故事……" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/row2"
         android:layout_width="wrap_content"
@@ -721,7 +736,6 @@
             android:id="@+id/keep"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:background="@drawable/selector_video_item"
             android:drawablePadding="6dp"
             android:focusable="true"
@@ -734,24 +748,6 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             app:drawableStartCompat="@drawable/ic_detail_keep_off" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/change1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/selector_video_item"
-            android:drawablePadding="6dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center"
-            android:nextFocusRight="@id/change1"
-            android:nextFocusUp="@id/actor"
-            android:nextFocusDown="@id/flag"
-            android:singleLine="true"
-            android:text="@string/play_change"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            app:drawableStartCompat="@drawable/ic_detail_change" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

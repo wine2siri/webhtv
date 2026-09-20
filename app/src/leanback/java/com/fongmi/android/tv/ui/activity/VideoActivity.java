@@ -665,7 +665,6 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mBinding.keep.setOnClickListener(view -> onKeep());
         mBinding.search.setOnClickListener(view -> onSearch());
         mBinding.video.setOnClickListener(view -> onVideo());
-        mBinding.change1.setOnClickListener(view -> onChange());
         mBinding.content.setOnClickListener(view -> onContent());
         mBinding.control.action.text.setOnClickListener(this::onTrack);
         mBinding.control.action.audio.setOnClickListener(this::onTrack);
@@ -1154,6 +1153,13 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     private void setText(Vod item) {
         mBinding.content.setTag(item.getContent());
         setDetailLyrics(item.getContent());
+        // r7: 简介默认展开在按钮行上方 (与 OK影视一致), 全量仍点"简介"按钮弹窗
+        if (TextUtils.isEmpty(item.getContent())) {
+            mBinding.contentText.setVisibility(View.GONE);
+        } else {
+            mBinding.contentText.setText(item.getContent());
+            mBinding.contentText.setVisibility(View.VISIBLE);
+        }
         setText(mBinding.year, R.string.detail_year, item.getYear());
         setText(mBinding.area, R.string.detail_area, item.getArea());
         setText(mBinding.type, R.string.detail_type, item.getTypeName());
