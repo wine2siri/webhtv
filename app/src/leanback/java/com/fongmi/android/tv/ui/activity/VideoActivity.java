@@ -739,7 +739,13 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mBinding.flag.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
             @Override
             public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                if (mFlagAdapter.getItemCount() > 0) onItemClick(mFlagAdapter.get(position));
+                // fix crash: 此回调可能在 RecyclerView 布局计算中触发, 同步调 onItemClick →
+                // notifyItemsChanged 会 IllegalStateException "Cannot call this method while
+                // RecyclerView is computing a layout" (换源面板滚动必崩); post 到主线程队列末尾执行
+                if (position < 0 || position >= mFlagAdapter.getItemCount()) return;
+                Flag item = mFlagAdapter.get(position);
+                if (item.isSelected()) return;
+                mBinding.flag.post(() -> { if (!item.isSelected()) onItemClick(item); });
             }
         });
         mBinding.episode.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
