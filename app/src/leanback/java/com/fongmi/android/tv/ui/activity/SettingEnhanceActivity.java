@@ -12,6 +12,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.gitcloud.GitCloudAccountStore;
+import com.fongmi.android.tv.drive.DriveCookieSync;
 import com.fongmi.android.tv.playback.ViewingRecordSyncStore;
 import com.fongmi.android.tv.remote.RemoteStore;
 import com.fongmi.android.tv.setting.Setting;
@@ -91,6 +92,7 @@ public class SettingEnhanceActivity extends BaseActivity {
             else Notify.show(R.string.setting_custom_csp_permission_required);
         }));
         mBinding.loginState.setOnClickListener(view -> LoginStateLearnDialog.show(this, this::setText));
+        mBinding.driveCookieSync.setOnClickListener(view -> DriveCookieLoginActivity.start(this));
         mBinding.oneKeySync.setOnClickListener(v -> OneKeySyncDialog.create().show(this));
     }
 
@@ -103,6 +105,7 @@ public class SettingEnhanceActivity extends BaseActivity {
                 mBinding.remoteTrust,
                 mBinding.oneKeySync,
                 mBinding.loginState,
+                mBinding.driveCookieSync,
                 mBinding.shellProxy,
                 mBinding.shellProxyConfig,
                 mBinding.managePage,
@@ -141,6 +144,7 @@ public class SettingEnhanceActivity extends BaseActivity {
             int pending = LoginStateSync.pendingPaths().size();
             return getString(LoginStateSync.hasLearningSnapshot() ? R.string.login_state_learning_count : R.string.login_state_count, learned, pending);
         });
+        safeSet("driveCookieSync", mBinding.driveCookieSyncText, () -> DriveCookieSync.summary(this));
     }
 
     private boolean canSetText() {

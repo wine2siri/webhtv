@@ -13,6 +13,7 @@ import androidx.viewbinding.ViewBinding;
 
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.gitcloud.GitCloudAccountStore;
+import com.fongmi.android.tv.drive.DriveCookieSync;
 import com.fongmi.android.tv.playback.ViewingRecordSyncStore;
 import com.fongmi.android.tv.remote.RemoteStore;
 import com.fongmi.android.tv.setting.Setting;
@@ -21,6 +22,7 @@ import com.fongmi.android.tv.setting.CustomCspSetting;
 import com.fongmi.android.tv.setting.ProxySetting;
 import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
+import com.fongmi.android.tv.ui.activity.DriveCookieLoginActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.dialog.CspWarmupDialog;
 import com.fongmi.android.tv.ui.dialog.CustomCspDialog;
@@ -102,6 +104,7 @@ public class SettingEnhanceFragment extends BaseFragment {
             else Notify.show(R.string.setting_custom_csp_permission_required);
         }));
         mBinding.loginState.setOnClickListener(view -> LoginStateLearnDialog.show(this, this::setText));
+        mBinding.driveCookieSync.setOnClickListener(view -> DriveCookieLoginActivity.start(requireContext()));
         mBinding.oneKeySync.setOnClickListener(v -> OneKeySyncDialog.create().show(requireActivity()));
     }
 
@@ -114,6 +117,7 @@ public class SettingEnhanceFragment extends BaseFragment {
                 mBinding.remoteTrust,
                 mBinding.oneKeySync,
                 mBinding.loginState,
+                mBinding.driveCookieSync,
                 mBinding.shellProxy,
                 mBinding.shellProxyConfig,
                 mBinding.managePage,
@@ -152,6 +156,7 @@ public class SettingEnhanceFragment extends BaseFragment {
             int pending = LoginStateSync.pendingPaths().size();
             return getString(LoginStateSync.hasLearningSnapshot() ? R.string.login_state_learning_count : R.string.login_state_count, learned, pending);
         });
+        safeSet("driveCookieSync", mBinding.driveCookieSyncText, () -> DriveCookieSync.summary(requireContext()));
     }
 
     private boolean canSetText() {

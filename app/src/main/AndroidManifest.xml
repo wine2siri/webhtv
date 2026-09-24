@@ -110,6 +110,11 @@
             android:taskAffinity="${applicationId}.playback_recovery"
             android:theme="@android:style/Theme.Material.NoActionBar" />
 
+        <activity
+            android:name=".ui.activity.DriveCookieLoginActivity"
+            android:exported="false"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+
         <receiver
             android:name=".receiver.ActionReceiver"
             android:exported="false">

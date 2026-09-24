@@ -1538,4 +1538,5 @@
 
     <string name="player_audio_badge_queue">队列</string>
     <string name="player_audio_repeat">循环</string>
+    <string name="setting_drive_cookie_sync">网盘登录与同步</string>
 </resources>
