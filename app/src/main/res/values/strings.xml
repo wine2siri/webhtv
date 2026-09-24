@@ -1547,4 +1547,10 @@
     <string name="player_audio_badge_queue">Queue</string>
     <string name="player_audio_repeat">Repeat</string>
     <string name="setting_drive_cookie_sync">Drive login and cookie sync</string>
+    <string name="search_source_count">%1$d sources</string>
+    <string name="search_choose_source">Choose source</string>
+    <string name="search_source_summary">%1$d available sources</string>
+    <string name="search_source_recommended">%1$s · Recommended</string>
+    <string name="search_source_fallback">Source %1$d</string>
+    <string name="search_source_accessibility">Source %1$d of %2$d, %3$s</string>
 </resources>

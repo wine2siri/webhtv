@@ -84,6 +84,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
     @ElementList(entry = "dd", required = false, inline = true)
     private List<Flag> vodFlags;
     private Site site;
+    private transient List<Vod> sourceItems;
 
     public Vod() {
     }
@@ -110,6 +111,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.style = in.readParcelable(Style.class.getClassLoader());
         this.vodFlags = in.createTypedArrayList(Flag.CREATOR);
         this.site = in.readParcelable(Site.class.getClassLoader());
+        this.sourceItems = in.createTypedArrayList(Vod.CREATOR);
     }
 
     public static Vod objectFrom(String str) {
@@ -251,6 +253,49 @@ public class Vod implements Parcelable, Diffable<Vod> {
         return getSite() == null ? "" : getSite().getKey();
     }
 
+    public List<Vod> getSourceItems() {
+        List<Vod> items = new ArrayList<>();
+        items.add(this);
+        if (sourceItems != null) items.addAll(sourceItems);
+        return items;
+    }
+
+    public int getSourceCount() {
+        return 1 + (sourceItems == null ? 0 : sourceItems.size());
+    }
+
+    public void addSourceItem(Vod item) {
+        if (item == null || item == this) return;
+        if (sourceItems == null) sourceItems = new ArrayList<>();
+        sourceItems.add(item);
+    }
+
+    public Vod copyForSourceGroup() {
+        Vod copy = new Vod();
+        copy.vodId = vodId;
+        copy.vodName = vodName;
+        copy.typeName = typeName;
+        copy.vodPic = vodPic;
+        copy.vodRemarks = vodRemarks;
+        copy.vodYear = vodYear;
+        copy.vodArea = vodArea;
+        copy.vodDirector = vodDirector;
+        copy.vodActor = vodActor;
+        copy.vodContent = vodContent;
+        copy.vodPlayFrom = vodPlayFrom;
+        copy.vodPlayUrl = vodPlayUrl;
+        copy.vodTag = vodTag;
+        copy.action = action;
+        copy.cate = cate;
+        copy.style = style;
+        copy.land = land;
+        copy.circle = circle;
+        copy.ratio = ratio;
+        copy.vodFlags = vodFlags == null ? null : new ArrayList<>(vodFlags);
+        copy.site = site;
+        return copy;
+    }
+
     public int getSiteVisible() {
         return getSite() == null ? View.GONE : View.VISIBLE;
     }
@@ -357,6 +402,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         dest.writeParcelable(this.style, flags);
         dest.writeTypedList(this.vodFlags);
         dest.writeParcelable(this.site, flags);
+        dest.writeTypedList(this.sourceItems);
     }
 
     @Override
@@ -366,7 +412,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
 
     @Override
     public boolean isSameContent(Vod other) {
-        return getName().equals(other.getName()) && getPic().equals(other.getPic()) && getRemarks().equals(other.getRemarks()) && Objects.equals(getSite(), other.getSite());
+        return getName().equals(other.getName()) && getPic().equals(other.getPic()) && getRemarks().equals(other.getRemarks()) && Objects.equals(getSite(), other.getSite()) && getSourceCount() == other.getSourceCount();
     }
 
     public static final Creator<Vod> CREATOR = new Creator<>() {

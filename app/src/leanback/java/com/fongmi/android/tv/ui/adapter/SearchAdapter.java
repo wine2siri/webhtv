@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.AdapterSearchBinding;
 import com.fongmi.android.tv.utils.ImgUtil;
@@ -125,9 +126,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Vod item = items.get(position);
         holder.bindName(item.getName());
-        holder.binding.site.setText(item.getSiteName());
+        holder.binding.site.setText(item.getSourceCount() > 1 ? holder.itemView.getContext().getString(R.string.search_source_count, item.getSourceCount()) : item.getSiteName());
         holder.binding.remark.setText(item.getRemarks());
-        holder.binding.site.setVisibility(item.getSiteVisible());
+        holder.binding.site.setVisibility(item.getSourceCount() > 1 ? android.view.View.VISIBLE : item.getSiteVisible());
         holder.binding.remark.setVisibility(item.getRemarkVisible());
         holder.binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
         holder.binding.getRoot().setOnKeyListener((v, keyCode, event) -> listener.onItemKey(holder.getBindingAdapterPosition(), keyCode, event));

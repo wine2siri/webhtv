@@ -24,12 +24,14 @@ import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityCollectBinding;
 import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.search.ContentSourceAggregator;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.adapter.CollectAdapter;
 import com.fongmi.android.tv.ui.adapter.SearchAdapter;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
+import com.fongmi.android.tv.ui.dialog.ContentSourceDialog;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.github.catvod.crawler.SpiderDebug;
 import com.google.gson.reflect.TypeToken;
@@ -234,13 +236,23 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
 
     private void addSearchItems(List<Vod> items) {
         if (mScrolling) mPendingItems.addAll(items);
+        else if (isAllSelected()) refreshAllSearchItems();
         else mSearchAdapter.appendSource(items, getCount() * 4);
     }
 
     private void flushPendingItems() {
         if (mPendingItems.isEmpty()) return;
-        mSearchAdapter.appendSource(new ArrayList<>(mPendingItems), getCount() * 4);
+        if (isAllSelected()) refreshAllSearchItems();
+        else mSearchAdapter.appendSource(new ArrayList<>(mPendingItems), getCount() * 4);
         mPendingItems.clear();
+    }
+
+    private boolean isAllSelected() {
+        return "all".equals(mCollectAdapter.getActivated().getSite().getKey());
+    }
+
+    private void refreshAllSearchItems() {
+        mSearchAdapter.setSource(ContentSourceAggregator.aggregate(mCollectAdapter.get(0).getList()), getCount() * 4);
     }
 
     private void preloadNextRows(int count) {
@@ -302,6 +314,7 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
     }
 
     private void setSearchItemsLazy(List<Vod> items) {
+        if (isAllSelected()) items = ContentSourceAggregator.aggregate(items);
         mSearchAdapter.setSource(items, getCount() * 4);
         mBinding.recycler.post(() -> {
             scrollSearchToTop();
@@ -332,6 +345,14 @@ public class CollectActivity extends BaseActivity implements CollectAdapter.OnCl
 
     @Override
     public void onItemClick(Vod item) {
+        if (item.getSourceCount() > 1) {
+            ContentSourceDialog.show(this, item, this::openItem);
+            return;
+        }
+        openItem(item);
+    }
+
+    private void openItem(Vod item) {
         long start = System.currentTimeMillis();
         setResult(Activity.RESULT_OK);
         mLeavingForPlayback = true;

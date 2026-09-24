@@ -30,6 +30,7 @@ import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.FragmentCollectBinding;
 import com.fongmi.android.tv.model.SearchProgress;
 import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.search.ContentSourceAggregator;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.activity.FolderActivity;
@@ -38,6 +39,7 @@ import com.fongmi.android.tv.ui.adapter.CollectAdapter;
 import com.fongmi.android.tv.ui.adapter.SearchAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
+import com.fongmi.android.tv.ui.dialog.ContentSourceDialog;
 import com.fongmi.android.tv.utils.MobileWindow;
 import com.fongmi.android.tv.utils.ResUtil;
 
@@ -243,7 +245,7 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
         mCollects.get(0).getList().addAll(items);
         mCollects.add(Collect.create(items));
         mCollectAdapter.setItems(new ArrayList<>(mCollects));
-        if (mCollectAdapter.getPosition() == 0) mSearchAdapter.setItems(new ArrayList<>(mAllResults));
+        if (mCollectAdapter.getPosition() == 0) mSearchAdapter.setItems(ContentSourceAggregator.aggregate(mAllResults));
     }
 
     private void setSearchProgress(SearchProgress progress) {
@@ -260,13 +262,22 @@ public class CollectFragment extends BaseFragment implements MenuProvider, Colle
 
     @Override
     public void onItemClick(int position, Collect item) {
-        mSearchAdapter.setItems(item.getList(), () -> mBinding.recycler.scrollToPosition(0));
+        List<Vod> items = position == 0 ? ContentSourceAggregator.aggregate(item.getList()) : item.getList();
+        mSearchAdapter.setItems(items, () -> mBinding.recycler.scrollToPosition(0));
         mCollectAdapter.setSelected(position);
         mScroller.setPage(item.getPage());
     }
 
     @Override
     public void onItemClick(Vod item) {
+        if (item.getSourceCount() > 1) {
+            ContentSourceDialog.show(this, item, this::openItem);
+            return;
+        }
+        openItem(item);
+    }
+
+    private void openItem(Vod item) {
         if (item.isFolder()) FolderActivity.start(requireActivity(), item.getSiteKey(), Result.folder(item));
         else {
             String pic = item.getPic().isEmpty() ? getPic() : item.getPic();

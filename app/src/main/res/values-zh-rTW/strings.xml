@@ -1522,4 +1522,10 @@
 
     <string name="player_audio_badge_queue">佇列</string>
     <string name="player_audio_repeat">循環</string>
+    <string name="search_source_count">%1$d 個來源</string>
+    <string name="search_choose_source">選擇來源</string>
+    <string name="search_source_summary">共 %1$d 個可用來源</string>
+    <string name="search_source_recommended">%1$s · 推薦</string>
+    <string name="search_source_fallback">來源 %1$d</string>
+    <string name="search_source_accessibility">第 %1$d 個來源，共 %2$d 個，%3$s</string>
 </resources>

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.AdapterSearchBinding;
 import com.fongmi.android.tv.databinding.AdapterVodRectBinding;
@@ -86,9 +87,9 @@ public class SearchAdapter extends BaseDiffAdapter<Vod, RecyclerView.ViewHolder>
         private void initView(Vod item) {
             binding.name.setText(item.getName());
             setMarquee(binding.getRoot().hasFocus());
-            binding.site.setText(item.getSiteName());
+            binding.site.setText(item.getSourceCount() > 1 ? itemView.getContext().getString(R.string.search_source_count, item.getSourceCount()) : item.getSiteName());
             binding.remark.setText(item.getRemarks());
-            binding.site.setVisibility(item.getSiteVisible());
+            binding.site.setVisibility(item.getSourceCount() > 1 ? android.view.View.VISIBLE : item.getSiteVisible());
             binding.remark.setVisibility(item.getRemarkVisible());
             binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
             ImgUtil.load(item.getName(), item.getPic(), binding.image);
@@ -122,10 +123,10 @@ public class SearchAdapter extends BaseDiffAdapter<Vod, RecyclerView.ViewHolder>
             applySize();
             binding.name.setText(item.getName());
             setMarquee(binding.getRoot().hasFocus());
-            binding.site.setText(item.getSiteName());
+            binding.site.setText(item.getSourceCount() > 1 ? itemView.getContext().getString(R.string.search_source_count, item.getSourceCount()) : item.getSiteName());
             binding.remark.setText(item.getRemarks());
             binding.year.setVisibility(android.view.View.GONE);
-            binding.site.setVisibility(item.getSiteVisible());
+            binding.site.setVisibility(item.getSourceCount() > 1 ? android.view.View.VISIBLE : item.getSiteVisible());
             binding.name.setVisibility(item.getNameVisible());
             binding.remark.setVisibility(item.getRemarkVisible());
             binding.getRoot().setOnClickListener(v -> listener.onItemClick(item));
