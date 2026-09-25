@@ -97,6 +97,7 @@ import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.playback.PlaybackOrientation;
 import com.fongmi.android.tv.player.PlayerHelper;
 import com.fongmi.android.tv.player.PlayerManager;
+import com.fongmi.android.tv.player.autoskip.LocalAutoSkipCoordinator;
 import com.fongmi.android.tv.player.engine.PlayerEngine;
 import com.fongmi.android.tv.player.engine.PlaySpec;
 import com.fongmi.android.tv.player.karaoke.KaraokeController;
@@ -287,6 +288,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private CustomKeyDown mKeyDown;
     private List<String> mBroken;
     private History mHistory;
+    private final LocalAutoSkipCoordinator mAutoSkip = new LocalAutoSkipCoordinator();
     private boolean fullscreen;
     private boolean initAuto;
     private boolean autoMode;
@@ -3934,6 +3936,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void setEnding(long ending) {
+        mAutoSkip.markManualEnding(mHistory, player(), getHistoryKey());
         mHistory.setEnding(ending);
         mBinding.control.action.ending.setText(ending <= 0 ? getString(R.string.play_ed) : Util.timeMs(mHistory.getEnding()));
     }
@@ -3952,6 +3955,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void setOpening(long opening) {
+        mAutoSkip.markManualOpening(mHistory, player(), getHistoryKey());
         mHistory.setOpening(opening);
         mBinding.control.action.opening.setText(opening <= 0 ? getString(R.string.play_op) : Util.timeMs(mHistory.getOpening()));
     }
@@ -5746,6 +5750,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     @Override
     protected void onTitlesChanged() {
         setTitleVisible();
+        inspectAutoSkipCandidate();
     }
 
     @Override
@@ -5793,6 +5798,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
                 hideProgress();
                 checkControl();
                 refreshLyrics();
+                inspectAutoSkipCandidate();
                 player().reset();
                 break;
             case Player.STATE_ENDED:
@@ -5906,7 +5912,8 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         duration = mHistory.getDuration();
         PlaybackEventCollector.get().onProgress(mHistory, player());
         if (mHistory.canSave() && mHistory.canSync()) syncHistory();
-        if (mHistory.getEnding() > 0 && duration > 0 && mHistory.getEnding() + position >= duration) {
+        long ending = mAutoSkip.effectiveEnding(mHistory, player(), getHistoryKey());
+        if (ending > 0 && duration > 0 && ending + position >= duration) {
             checkEnded(false);
         }
     }
@@ -5950,8 +5957,14 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
             mHistory.resetPlaybackPosition();
             syncHistory();
         }
-        long position = Math.max(mHistory.getOpening(), mHistory.getPosition());
+        long opening = mAutoSkip.effectiveOpening(mHistory, player(), getHistoryKey());
+        long position = Math.max(opening, mHistory.getPosition());
         if (position > 0) player().seekTo(position);
+    }
+
+    private void inspectAutoSkipCandidate() {
+        if (!isOwner() || mHistory == null || service() == null) return;
+        mAutoSkip.inspect(this, mHistory, player(), getHistoryKey());
     }
 
     private void checkOrientation() {
