@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - codex/t17-launcher-theme-switcher
+      - codex/t18-global-content-filter
     paths:
       - ".github/workflows/android-signed-verify.yml"
       - "app/**"
