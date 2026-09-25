@@ -2,6 +2,11 @@ name: Android Signed Verification
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - codex/t17-launcher-theme-switcher
+    paths:
+      - ".github/workflows/android-signed-verify.yml"
 
 permissions:
   contents: read
