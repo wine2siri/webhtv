@@ -23,7 +23,7 @@
     <androidx.leanback.widget.HorizontalGridView
         android:id="@+id/flag"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="56dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         tools:itemCount="3"
