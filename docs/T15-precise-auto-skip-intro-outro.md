@@ -1,16 +1,29 @@
-# T15 精准自动跳片头片尾：评估、接口与验收方案
+# T15 精准自动跳片头片尾：本地优先实施记录
 
 ## Recovery anchor
 
-- 目标：在保留 Exo、MPV、IJK 三个现有内核和现有手工片头/片尾能力的前提下，设计由 Moonbox 聚合片段数据、WebHTV 在公共播放控制层执行的精准自动跳过能力。
-- 权限：**assessment-only**。用户尚未批准实施；不得修改 `app/**`、`third_party/**`、锁文件、补丁、AAR、native 库或运行时行为。
-- 工作区：独立 Worktree `H:\OKYS-worktrees\webhtv-t15`；分支 `codex/t15-auto-skip-assessment`；基线 `3fa46da8141bd62e5cbfcc0eb8dcabd77f8dab97`；评估开始时无脏文件。
+- 目标：保留 Exo、MPV、IJK 和现有手工片头/片尾能力，以“当前媒体版本本地识别、用户确认、本地保存”为主线实现精准跳过。
+- 权限：用户已在 2026-09-25 明确批准按修订方案开始实施；本单元只实现“具名章节候选 -> TV 端确认 -> 当前版本本地规则 -> 三内核公共执行”。
+- 工作区：独立 Worktree `H:\OKYS-worktrees\webhtv-t15`；分支 `codex/t15-auto-skip-assessment`；实施基线 `764d1328a7275157e40e75f5342616d226da9cc2`；实施开始时无脏文件。
 - 文档所有权：本文件是 T15 唯一任务文档；总索引仅登记状态和链接。
-- 当前结论：建议按“Moonbox 统一片段聚合与缓存 -> WebHTV 公共层验证/执行 -> 三内核无感复用”实施；第一阶段只允许高置信度、时间轴一致的 `intro`/`outro` 自动跳，其他结果仅提示或忽略。
-- 未授权：Moonbox/WebHTV 生产代码、数据库迁移、播放器行为、第三方写入/投票、后台批量扫描、发布与推送。
-- 唯一下一动作：用户审阅本方案并明确批准、修改或暂缓 T15；未批准前停止。
+- 当前结论：**不建设 Moonbox 时间戳数据库，不在首期接社区源。** 手工值最高优先；具名章节是第一候选源；无章节时再评估受限窗口的静音/黑场扫描；自动结果与 `History.opening/ending` 分离。
+- 本单元代码：新增 `player/autoskip` 公共策略、120 天/240 条上限的哈希键本地规则、Mobile/Leanback 确认与执行接点；没有改动 Exo/MPV/IJK 内核、AAR、native、锁或 Moonbox。
+- 唯一下一动作：由任务护栏提交本实施单元并创建恢复标签；后续以独立原子单元评估并实现无章节时的静音/黑场候选，不允许 MPV 私有实现改变另外两内核的既有行为。
 
-## 1. 决策包
+## 0. 2026-09-25 批准后的架构决策
+
+前文最初研究的 Moonbox/社区聚合方案保留为历史评估证据，但不再是当前实施方向。现行优先级为：
+
+1. 用户手工片头/片尾：最高优先级；包括显式清零，均压制当前版本的自动规则。
+2. 当前文件的具名章节：Exo、MPV 已能通过 `PlayerManager.getCurrentMediaEditions()` 提供；只生成候选，不经用户确认不执行、不保存。
+3. 当前文件的受限窗口检测：没有可靠章节时，后续仅分析开头/结尾窗口，优先静音边界、黑场作辅助；必须后台执行、可取消、有资源预算。
+4. 社区数据与 Moonbox：首期不接入。未来如启用，只能作为可选候选源，不得高于手工值或当前文件证据。
+
+本地规则只保存媒体身份哈希、片头目标毫秒、距片尾毫秒、拒绝/手工覆盖标记和更新时间；不保存媒体、URL、Cookie、Token、图像帧或音频。查询参数被去除后再哈希，时长按 5 秒桶参与版本身份；记录 120 天过期并限制为 240 条，因此定期删除影视文件不会带来媒体缓存占用。
+
+确认后的自动值不写入 `History.opening/ending`，不会通过既有历史同步链路上传 Moonbox。播放时按 `手工 History > 当前版本本地规则 > 无动作` 解析；自动规则缺失、过期、版本变化、IJK 无章节或识别失败时均保持原播放。
+
+## 1. 决策包（其中 Moonbox 推荐已被第 0 节取代）
 
 - 任务编号和名称：`T15` 精准自动跳片头片尾。
 - 所属分类：通用/App（公共播放策略），实施顺序 `Moonbox contract -> WebHTV common -> Exo/MPV/IJK 回归`；不属于任何单一内核升级。
@@ -26,16 +39,16 @@
 
 ## 2. 权限、范围与不变量
 
-### 2.1 本轮允许与禁止
+### 2.1 当前实施单元允许与禁止
 
-本轮只修改本文件和 `docs/upstream-player-dependency-merge-assessment-2026-08-20.md`。以下均是后续实施建议，不是已完成行为。
+本单元允许修改本文件、公共 `player/autoskip` 包、Mobile/Leanback `VideoActivity`、公共字符串和对应单测。禁止修改播放器内核、第三方依赖、二进制、锁、Moonbox 和现有 History 字段语义。
 
 必须保留的合同：
 
 1. Exo、MPV、IJK 的选择、解码、Surface、网络、字幕与音频路径不变。
 2. Mobile 与 Leanback 的现有手工片头/片尾按钮、±1 秒调整、清除、历史同步和下一集行为不变。
-3. 手工值不被远端数据覆盖；用户显式清除/禁用必须胜过自动结果。
-4. Moonbox 或任一第三方不可用时，起播不得被阻塞，也不得改变媒体 URL、清单、时长或内核。
+3. 手工值不被本地候选覆盖；用户显式清除/禁用必须胜过自动结果。
+4. 自动识别不得阻塞起播，也不得改变媒体 URL、清单、时长或内核。
 5. 光盘导航、直播、未知时长、音频播放和无法可靠识别季集的内容默认不自动跳。
 
 ### 2.2 基线与本地可达性
@@ -49,7 +62,7 @@
 | 内核边界 | 上述逻辑调用公共 `player().seekTo()`/下一集控制 | 无需修改 Exo/MPV/IJK 内核即可覆盖三者 |
 | Moonbox | 已有 TMDB、Emby 身份与 WebHTV 管理链路；未发现片段时间 API | Moonbox 适合做服务端适配/缓存，但需要新增版本化只读合同 |
 
-## 3. 决策问题与结论
+## 3. 早期 Moonbox/社区方案（历史评估，当前不采用）
 
 ### 3.1 问题
 
@@ -69,7 +82,20 @@
 
 任何 `rejected`（身份冲突、越界、片段重叠、duration 不匹配、直播/光盘/未知时长）都视为无数据。**不得为了覆盖率把低置信度结果自动执行。**
 
-## 4. 第三方数据源研究
+### 3.3 MPV 社区脚本对当前方案的参考价值
+
+截至 2026-09-25 核对的参考提交：
+
+| 项目 | commit | 可借鉴点 | 不直接照搬的原因 |
+| --- | --- | --- | --- |
+| [Eisa01/mpv-scripts](https://github.com/Eisa01/mpv-scripts) | `b9e63743a858766c9cc7a801d77313b0cecdb049` | 有章节时按章节跳；无章节时由用户触发寻找静音并可保存章节 | Lua/mpv 专用，不能覆盖 Exo/IJK；交互触发不等于可靠的全自动语义识别 |
+| [allecsc/mpv-qol-scripts](https://github.com/allecsc/mpv-qol-scripts) | `e0b04926f00ce3d482120d5bf15ebc0e32f7d94a` | 具名章节优先，位置章节/静音/黑场逐级降级；默认提示，高置信才自动 | 检测依赖 mpv/FFmpeg filter，需改造成 Android 后台、有界、可取消的公共分析器 |
+| [rui-ddc/skip-intro](https://github.com/rui-ddc/skip-intro) | `3a7d2e95d5adfa761e1a25097022403f3b8a0cba` | `silencedetect` 的阈值、最小时长和“跳到下一个静音”的交互可作边界实验基线 | 目标是用户命令后的下一静音，不证明该边界一定是片头结束；不能无确认自动执行 |
+| [po5/mpv_sponsorblock](https://github.com/po5/mpv_sponsorblock) | `7785c1477103f2fafabfd65fdcf28ef26e6d7f0d` | 文件切换重置、时间位置观察、每片段只执行一次、自动/提示模式分离 | SponsorBlock 数据语义与影视片头不同；只借鉴会话幂等和状态重置 |
+
+因此 MPV 插件有明显参考价值，但参考的是**候选层级、确认交互、幂等和资源边界**，不是把 Lua 插件直接塞进 MPV 内核。当前第一单元已经采用“具名章节优先、默认确认、每版本保存”的部分；静音/黑场必须先证明能以公共 Android 分析器覆盖三内核，否则只能作为明确标注的 MPV 增强，不能宣称通用。
+
+## 4. 第三方数据源研究（历史评估，首期不接入）
 
 访问日期均为 2026-09-25。网络请求通过正常 HTTPS 完成；未使用私有凭据。
 
@@ -113,7 +139,7 @@
 | D. Moonbox/Jellyfin 本地指纹检测 | 文件级最精确，覆盖无社区数据内容 | 扫描 CPU/IO 高、需 FFmpeg/Chromaprint | 运维复杂，需样本与任务队列 | 后续 Phase 3，不纳入 v1 |
 | E. 修改三个内核分别识别/跳过 | 与内核时间轴耦合 | 重复开发、回归面最大 | 三套生命周期/seek 语义 | 拒绝；当前公共层已足够 |
 
-## 6. 推荐架构与数据流
+## 6. 早期推荐架构与数据流（已被第 0 节取代）
 
 ```text
 WebHTV 播放身份
@@ -139,7 +165,7 @@ WebHTV SegmentPolicy（公共 App 层）
 Exo / MPV / IJK（保持不变）
 ```
 
-## 7. Moonbox 接口设计
+## 7. Moonbox 接口设计（保留草案，当前不实施）
 
 ### 7.1 查询
 
@@ -237,7 +263,7 @@ episode-level: mediaType + tmdb/imdb/mal + season + episode/absoluteEpisode + ro
 
 社区源正缓存建议 7 天、负缓存 12 小时、错误缓存 1–5 分钟；实际 TTL 可配置。仅播放按需查询，不预抓整库，遵守第三方条款。
 
-## 8. WebHTV 接口与状态设计
+## 8. WebHTV 早期远端接口与状态设计（保留草案）
 
 ### 8.1 独立模型，不污染 History
 
@@ -282,7 +308,30 @@ PlaybackSegmentPlan
 
 回滚只需关闭 T15 总开关/移除 Moonbox endpoint 使用；三内核、History 字段和手工按钮无需回滚。网络请求失败自动等价于“关闭”。
 
-## 9. 分阶段实施建议（待批准）
+## 9. 当前分阶段实施
+
+### Phase A：具名章节、本地确认与轻量规则（本提交）
+
+- 公共策略读取现有 `MediaEdition`，只接受明确的 OP/opening/intro/片头与 ED/ending/outro/credits/片尾名称，并限制在开头/结尾合理窗口。
+- 候选必须由用户确认；拒绝按当前版本及章节指纹记忆，避免重复打扰。
+- 自动规则与手工 History 分离；手工非零值优先，显式清零也会写入本地压制标记。
+- 当前版本键只保存 SHA-256；URL 查询和 fragment 不参与哈希，时长按 5 秒桶区分版本；120 天/240 条自动清理。
+- Exo/MPV 复用现有章节接口；IJK 未提供章节时返回空列表并保持原行为。所有内核继续通过公共 `seekTo`/`checkEnded` 执行。
+
+### Phase B：无章节时的受限窗口信号分析（下一原子单元）
+
+- 仅分析片头和片尾有限窗口，不做整片扫描，不保存音视频帧。
+- 先验证现有 `MediaExtractor`/`MediaCodec` 音频解码基础能否对当前 URL、Header、HLS/DASH/EDL 做有界 seek；静音只能产生候选边界，不能直接证明片头语义。
+- 黑场只作为辅助置信信号；若需要抓取视频帧、显著占用解码器或与正在播放的内核争抢网络/硬解资源，必须重新评估性能 gate。
+- 分析在后台执行，可取消；切集、切源、切内核即作废旧 generation；失败、超时、不支持均无动作。
+- 默认仍为 TV 端确认。只有后续样本证明零误跳且用户另行批准，才评估自动执行高置信候选。
+
+### Phase C：可选同步/API（当前无需求，不实施）
+
+- Moonbox 不需要保存用户确认的时间戳；本地小记录足以适配不同剪辑版本和媒体定期删除。
+- 若未来需要跨设备复用，可定义“哈希版本身份 + 规则 + 证据 + 用户来源”的可选 API；默认关闭，不能恢复为作品级数据库或覆盖本地手工值。
+
+## 9A. 早期分阶段建议（已废弃）
 
 ### Phase A：Moonbox 只读 contract 与适配器
 
@@ -308,9 +357,30 @@ PlaybackSegmentPlan
 - 有彩蛋语义/多 credits 段后再决定自动下一集。
 - 本地指纹检测只考虑 Moonbox/Jellyfin 离线任务，独立评估 CPU/IO、许可、样本、任务队列和存储；不放进 Android 播放线程。
 
-## 10. 验收矩阵
+## 10. 当前验收矩阵
 
-### 10.1 接口与策略
+| ID | 场景 | 预期 |
+| --- | --- | --- |
+| L01 | 明确 `OP/片头` 章节且有下一章节 | 只生成“下一章起点”为 opening 的候选；未确认不 seek |
+| L02 | 明确 `ED/片尾/Credits` 章节位于尾部窗口 | 只生成“duration - 章节起点”为 ending 的候选 |
+| L03 | 普通 `Chapter 1` 或章节越过窗口 | 不生成候选 |
+| L04 | 用户已有手工 opening/ending | 对应自动侧不提示、不执行；另一侧可独立候选 |
+| L05 | 用户显式清零手工值 | 当前版本对应自动侧被压制，不因本地旧规则恢复 |
+| L06 | 接受候选 | 保存哈希版本规则；若仍在片头前则前跳；不写 History 自动字段 |
+| L07 | 拒绝候选 | 同版本同章节指纹不重复提示 |
+| L08 | URL token/query 改变但路径和时长相同 | 命中同一规则；原始 URL/token 不落盘 |
+| L09 | 路径或 5 秒时长桶变化 | 视为不同媒体版本，不误复用 |
+| L10 | 记录过期/超 240 条 | 120 天后或 LRU 上限外自动淘汰；不占媒体空间 |
+| L11 | Exo/MPV 有具名章节 | Mobile/Leanback 均能提示并经公共 seek/片尾逻辑执行 |
+| L12 | IJK 无章节 | 无提示、无异常，手工片头片尾继续工作 |
+| L13 | 切集/切源/切内核 | 媒体哈希变化后旧规则/旧提示不串用 |
+| L14 | 直播、短片、未知时长、光盘导航 | 不形成章节候选，原播放路径不变 |
+
+当前自动化证据：`AutoSkipChapterPolicyTest` 覆盖 L01–L04 的核心边界；Mobile ARM64 定向单测任务同时完成主源码编译；Leanback ARM64 Java 编译成功。L05–L14 中涉及 UI/真实媒体时序的部分仍需真机验收，不能由 JVM 测试替代。
+
+## 10A. 早期远端方案验收矩阵（保留，不作为当前 gate）
+
+### 10A.1 接口与策略
 
 | ID | 场景 | 输入/故障 | 期望 |
 | --- | --- | --- | --- |
@@ -325,7 +395,7 @@ PlaybackSegmentPlan
 | A09 | 身份错位 | TMDB 对、S/E 错或 MAL cour 错 | 拒绝/降级 suggested；不得自动 |
 | A10 | 条款/隐私 | 请求第三方 | 不含本地 URL/token/path；不批量镜像；日志脱敏 |
 
-### 10.2 WebHTV 公共行为
+### 10A.2 WebHTV 公共行为
 
 | ID | 场景 | Exo | MPV | IJK | 通过标准 |
 | --- | ---: | :---: | :---: | :---: | --- |
@@ -346,7 +416,7 @@ PlaybackSegmentPlan
 | W15 | 片尾含彩蛋 | ✓ | ✓ | ✓ | 只提示；不直接下一集，除非 final marker+用户配置 |
 | W16 | Mobile/Leanback | ✓ | ✓ | ✓ | 文案、焦点、遥控/触控与开关一致 |
 
-### 10.3 性能、可靠性和发布门槛
+### 10A.3 性能、可靠性和发布门槛
 
 - Moonbox 查询不在首帧关键路径；WebHTV 可并行请求，迟到计划仅在仍匹配当前 generation 时采用。
 - 建议服务端 p95（缓存命中）<100 ms，外部冷查有界超时每源 1.5–2.0 s、总预算 <=2.5 s；这些是实施目标，需测量后确认。
@@ -372,16 +442,12 @@ PlaybackSegmentPlan
 - 代码：后续每个 Phase 独立提交；先撤 WebHTV 自动执行，再撤 DTO/查询，最后可撤 Moonbox endpoint/cache。History 与三个内核不在回滚集合。
 - 数据：缓存可丢弃重建；不把自动结果写入手工 History，也不要求数据库不可逆迁移。
 
-### 11.3 审批项
+### 11.3 当前审批状态
 
-请用户选择：
-
-1. 批准推荐的 Phase A+B（Moonbox 只读聚合 + WebHTV 提示/公共判定，不自动 seek），验收后再批 Phase C；或
-2. 批准 A+B+C 一次实施，但仍按三次独立可回滚提交推进；或
-3. 修改来源优先级、默认片尾策略、精准阈值后再评估；或
-4. 暂缓/忽略 T15。
-
-在收到明确批准前，本任务保持 `pending approval`，不修改播放器或 Moonbox 代码。
+- 已批准：本地优先、自动识别后手工确认、手工最高优先、规则按当前版本保存、保留三内核与现有手工功能。
+- 已否决为首期方向：作品级/社区时间戳数据库、Moonbox 必选依赖、App 直连社区源。
+- 本提交不需要新增审批：具名章节候选和本地保存均在上述批准内。
+- 需要新 gate：若静音/黑场只能通过 MPV 私有 filter、需要整片扫描、需要并发视频硬解或要默认无确认自动跳，必须在实施前记录性能/兼容性证据并重新确认边界。
 
 ## 12. Checkpoint 1：2026-09-25 方案评估完成
 
@@ -394,3 +460,14 @@ PlaybackSegmentPlan
 - Rollback anchor：基线 `3fa46da8141bd62e5cbfcc0eb8dcabd77f8dab97`；文档提交可单独 revert。
 - Unresolved：用户审批范围；Moonbox 实际可用 Emby/Jellyfin marker 能力；发布前阈值样本校准；第三方条款的持续可用性。
 - Next action：用户决定 11.3 的实施范围。
+
+## 13. Checkpoint 2：2026-09-25 本地章节实施单元
+
+- Objective：完成具名章节候选、TV 端确认、当前媒体版本本地规则和手工优先的公共执行路径。
+- Guard：`T15-precise-auto-skip-intro-outro-implementation-a` / `upstream`；base `764d1328a7275157e40e75f5342616d226da9cc2`；实施开始时 0 个受保护脏路径。
+- Files：`player/autoskip/{AutoSkipRule,AutoSkipChapterPolicy,LocalAutoSkipStore,LocalAutoSkipCoordinator}.java`、两端 `VideoActivity.java`、公共 `strings.xml`、策略单测及本文件。
+- Implemented：命名与窗口约束、确认/拒绝、本地哈希版本键、TTL/LRU、手工清零压制、History 分离、Mobile/Leanback 公共起播/片尾接点；三内核实现未修改。
+- Evidence：`testMobileArm64_v8aDebugUnitTest --tests com.fongmi.android.tv.player.autoskip.AutoSkipChapterPolicyTest` 成功，同时 `compileMobileArm64_v8aDebugJavaWithJavac` 成功；首次 Worktree 构建耗时 5m15s。`compileLeanbackArm64_v8aDebugJavaWithJavac` 成功，耗时 40s。仅有仓库既有资源命名空间、32-bit native 与 Gradle deprecation 警告。
+- Unverified：真实媒体章节回调时序、TV 焦点/确认文案、三内核真机 seek；无章节静音/黑场尚未实现。
+- Rollback：实施基线及上一评估恢复标签 `recovery/T15-precise-auto-skip-intro-outro/20260925011729-764d1328a727`。
+- Next action：由 task guard finish 以本节两项成功证据提交并创建恢复标签。

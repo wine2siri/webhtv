@@ -1546,6 +1546,9 @@
 
     <string name="player_audio_badge_queue">Queue</string>
     <string name="player_audio_repeat">Repeat</string>
+    <string name="player_auto_skip_candidate_title">Skip intro/outro candidate</string>
+    <string name="player_auto_skip_candidate_message">Detected from named chapters: %1$s. Apply only to this media version?</string>
+    <string name="player_auto_skip_candidate_applied">Local skip rule saved</string>
     <string name="setting_drive_cookie_sync">Drive login and cookie sync</string>
     <string name="search_source_count">%1$d sources</string>
     <string name="search_choose_source">Choose source</string>
