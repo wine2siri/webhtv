@@ -22,7 +22,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <application android:banner="@mipmap/ic_banner">
+    <application android:banner="@drawable/banner_theme_h3">
 
         <meta-data
             android:name="design_width_in_dp"
@@ -44,12 +44,6 @@
             android:launchMode="singleTop"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.Splash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -100,6 +94,25 @@
                 <data android:scheme="jianpian" />
             </intent-filter>
         </activity>
+
+        <activity-alias android:name=".launcher.H3" android:targetActivity=".ui.activity.HomeActivity" android:enabled="true" android:exported="true" android:icon="@mipmap/ic_launcher_theme_h3" android:banner="@drawable/banner_theme_h3" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".launcher.Wood" android:targetActivity=".ui.activity.HomeActivity" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_launcher_theme_wood" android:banner="@drawable/banner_theme_wood" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".launcher.Glass" android:targetActivity=".ui.activity.HomeActivity" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_launcher_theme_glass" android:banner="@drawable/banner_theme_glass" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".launcher.Lotus" android:targetActivity=".ui.activity.HomeActivity" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_launcher_theme_lotus" android:banner="@drawable/banner_theme_lotus" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".launcher.Marble" android:targetActivity=".ui.activity.HomeActivity" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_launcher_theme_marble" android:banner="@drawable/banner_theme_marble" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
+        <activity-alias android:name=".launcher.Water" android:targetActivity=".ui.activity.HomeActivity" android:enabled="false" android:exported="true" android:icon="@mipmap/ic_launcher_theme_water" android:banner="@drawable/banner_theme_water" android:label="@string/app_name">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".ui.activity.CastActivity"

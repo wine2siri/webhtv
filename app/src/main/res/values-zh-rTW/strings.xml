@@ -1,7 +1,15 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
     <!-- App -->
-    <string name="app_name">影視</string>
+    <string name="app_name">影卓</string>
+    <string name="launcher_theme">桌面圖示主題</string>
+    <string name="launcher_theme_h3">H3 · 曜石鎏金</string>
+    <string name="launcher_theme_wood">深色胡桃木</string>
+    <string name="launcher_theme_glass">曜黑玻璃</string>
+    <string name="launcher_theme_lotus">荷葉露珠</string>
+    <string name="launcher_theme_marble">午夜大理石</string>
+    <string name="launcher_theme_water">月下水面</string>
+    <string name="launcher_theme_changed">主題已切換；部分桌面返回主頁或重新啟動後更新。</string>
 
     <!-- Live -->
     <string name="live_pass">密碼</string>

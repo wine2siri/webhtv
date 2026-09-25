@@ -24,11 +24,13 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.impl.LiveListener;
 import com.fongmi.android.tv.impl.SiteListener;
+import com.fongmi.android.tv.launcher.LauncherThemeManager;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.dialog.AboutDialog;
 import com.fongmi.android.tv.ui.dialog.ConfigDialog;
+import com.fongmi.android.tv.ui.dialog.ChoiceDialog;
 import com.fongmi.android.tv.ui.dialog.DohDialog;
 import com.fongmi.android.tv.ui.dialog.HistoryDialog;
 import com.fongmi.android.tv.ui.dialog.LiveDialog;
@@ -92,6 +94,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.incognitoText.setText(getSwitch(Setting.isIncognito()));
+        mBinding.launcherThemeText.setText(LauncherThemeManager.currentLabel(this));
         mBinding.languageText.setText((language = ResUtil.getStringArray(R.array.select_language))[Setting.getLanguageIndex()]);
         mBinding.sizeText.setText((size = ResUtil.getStringArray(R.array.select_size))[PlayerSetting.getSize()]);
     }
@@ -126,6 +129,7 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
         mBinding.liveHome.setOnClickListener(this::onLiveHome);
         mBinding.wall.setOnLongClickListener(this::onWallEdit);
         mBinding.incognito.setOnClickListener(this::setIncognito);
+        mBinding.launcherTheme.setOnClickListener(this::setLauncherTheme);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
         mBinding.wallDefault.setOnClickListener(this::setWallDefault);
@@ -269,6 +273,14 @@ public class SettingActivity extends BaseActivity implements ConfigListener, Sit
     private void setIncognito(View view) {
         Setting.putIncognito(!Setting.isIncognito());
         mBinding.incognitoText.setText(getSwitch(Setting.isIncognito()));
+    }
+
+    private void setLauncherTheme(View view) {
+        ChoiceDialog.showSingle(this, R.string.launcher_theme, LauncherThemeManager.labels(this), LauncherThemeManager.currentIndex(), which -> {
+            LauncherThemeManager.apply(this, which);
+            mBinding.launcherThemeText.setText(LauncherThemeManager.currentLabel(this));
+            Notify.show(R.string.launcher_theme_changed);
+        });
     }
 
     private void setSize(View view) {

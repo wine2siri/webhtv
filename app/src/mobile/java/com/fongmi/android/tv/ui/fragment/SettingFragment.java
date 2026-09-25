@@ -24,6 +24,7 @@ import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigListener;
 import com.fongmi.android.tv.impl.LiveListener;
 import com.fongmi.android.tv.impl.SiteListener;
+import com.fongmi.android.tv.launcher.LauncherThemeManager;
 import com.fongmi.android.tv.setting.Setting;
 import com.fongmi.android.tv.ui.activity.HomeActivity;
 import com.fongmi.android.tv.ui.base.BaseFragment;
@@ -95,6 +96,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private void setOtherText() {
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.incognitoText.setText(getSwitch(Setting.isIncognito()));
+        mBinding.launcherThemeText.setText(LauncherThemeManager.currentLabel(requireContext()));
     }
 
     private void setCacheText() {
@@ -126,6 +128,7 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
         mBinding.liveHome.setOnClickListener(this::onLiveHome);
         mBinding.wall.setOnLongClickListener(this::onWallEdit);
         mBinding.incognito.setOnClickListener(this::setIncognito);
+        mBinding.launcherTheme.setOnClickListener(this::setLauncherTheme);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
         mBinding.wallDefault.setOnClickListener(this::setWallDefault);
@@ -274,6 +277,14 @@ public class SettingFragment extends BaseFragment implements ConfigListener, Sit
     private void setIncognito(View view) {
         Setting.putIncognito(!Setting.isIncognito());
         mBinding.incognitoText.setText(getSwitch(Setting.isIncognito()));
+    }
+
+    private void setLauncherTheme(View view) {
+        ChoiceDialog.showSingle(this, R.string.launcher_theme, LauncherThemeManager.labels(requireContext()), LauncherThemeManager.currentIndex(), which -> {
+            LauncherThemeManager.apply(requireContext(), which);
+            mBinding.launcherThemeText.setText(LauncherThemeManager.currentLabel(requireContext()));
+            Notify.show(R.string.launcher_theme_changed);
+        });
     }
 
     private void setDoh(View view) {
