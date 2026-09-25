@@ -7,6 +7,12 @@ on:
       - codex/t17-launcher-theme-switcher
     paths:
       - ".github/workflows/android-signed-verify.yml"
+      - "app/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradle/**"
+      - "gradlew"
+      - "gradlew.bat"
 
 permissions:
   contents: read
