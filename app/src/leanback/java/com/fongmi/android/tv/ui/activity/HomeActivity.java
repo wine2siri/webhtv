@@ -26,6 +26,7 @@ import androidx.viewbinding.ViewBinding;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Product;
 import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.launcher.LauncherThemeTransition;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.api.config.WallConfig;
@@ -137,6 +138,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_App);
         super.onCreate(savedInstanceState);
+        LauncherThemeTransition.show(this, savedInstanceState == null);
     }
 
     @Override

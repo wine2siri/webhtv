@@ -1,20 +1,32 @@
-# T17 桌面图标与 TV Banner 主题切换
+# T17 图标、TV Banner 与启动过场主题
 
 ## 结果
 
 - 默认主题为 H3「曜石鎏金」：闭合圆环与播放三角均以同一中心点构造。
 - 应用显示名统一为「影卓」。
 - 支持六套主题：H3、深色胡桃木、曜黑玻璃、荷叶露珠、午夜大理石、月下水面。
-- 手机端和 TV 端设置页均提供「桌面图标主题」入口。
-- TV 端主题同时切换 Launcher 图标与 16:9 Banner；手机端切换 Launcher 图标。
+- 手机端和 TV 端设置页均提供「图标与启动主题」入口。
+- 六套主题现在同时驱动启动过场：材质背景、H3 标志与「影卓」字标会做 650ms 的缩放淡入，再以 260ms 淡出，不阻塞首页初始化。
+- 手机端继续切换 Launcher 图标；TV 端固定 H3 桌面入口和 Banner，主题差异在启动过场中可见，以保证 Projectivy 卡片稳定。
 
 ## 实现
 
-Android Manifest 为每套主题声明一个指向 `HomeActivity` 的 `activity-alias`。首次安装仅启用 H3；切换时先启用目标别名，再禁用其余别名，避免中途中断造成桌面入口全部消失。选择结果保存在 `launcher_theme` 偏好中。
+手机端仍通过指向 `HomeActivity` 的 `activity-alias` 切换桌面图标。TV 端恢复为稳定的 `HomeActivity` Launcher 组件，不再动态启停别名；`launcher_theme_changes_component` 使同一套设置逻辑在 TV 上只保存主题选择，在手机上同时更换组件。
+
+`LauncherThemeTransition` 在首次创建首页时叠加一个轻量启动过场，直接读取 `launcher_theme` 选择的背景与图标资源。不创建额外 Splash Activity，因此不会在 Android 12+ 上产生「系统启动画面 + 专用 Activity」的双重闪屏。
 
 自然材质只作为背景，圆环、播放符号与 Banner 字标均为确定性矢量，因此主题变化不会改变标志的几何中心。五张生成材质已标准化为 1280×720 WebP，合计约 0.7 MB。
 
-部分第三方桌面会缓存图标或 Banner。切换完成后设置页会提示返回主页；仍未刷新时需重启桌面进程或设备。别名本身已携带独立的 `android:icon` 与 `android:banner`，不依赖应用级默认资源。
+对 TV 来说，桌面图标和 Banner 固定为默认 H3，这是 Projectivy 兼容性的明确取舍，不是用户设置限制。组件身份保持不变比每次切换后让用户重新固定卡片更稳定。
+
+## 最佳实践与方案取舍（2026-09-25）
+
+- Android 官方《Splash screens》说明 Android 12+ 的系统启动画面由启动主题控制，动画建议不超过 1000ms，且可用退出动画衔接应用内容：<https://developer.android.com/develop/ui/views/launch/splash-screen>
+- Android 官方迁移指南明确警告，专用 Splash Activity 会在 Android 12+ 上造成双重启动画面：<https://developer.android.com/develop/ui/views/launch/splash-screen/migrate>
+- 方案 A（不改）：动态别名在 Android 系统层生效，但 Projectivy 实机丢卡，不可发布。
+- 方案 B（为每个主题建立独立启动 Activity）：能提前决定系统启动资源，但仍会改变桌面组件身份，且增加双重启动风险，否决。
+- 方案 C（采用）：TV 稳定单一启动组件 + 应用内不阻塞主题过场；手机保留动态图标。兼容 Projectivy，启动过场总时长 910ms，不引入额外 Activity。
+- 回滚：删除 `LauncherThemeTransition` 调用并恢复 TV 别名；偏好值无需迁移。
 
 ## 验证
 

@@ -2,14 +2,14 @@
 
     <!-- App -->
     <string name="app_name">影卓</string>
-    <string name="launcher_theme">Launcher theme</string>
+    <string name="launcher_theme">Icon and launch theme</string>
     <string name="launcher_theme_h3">H3 · Obsidian gold</string>
     <string name="launcher_theme_wood">Dark walnut</string>
     <string name="launcher_theme_glass">Smoked glass</string>
     <string name="launcher_theme_lotus">Lotus dew</string>
     <string name="launcher_theme_marble">Midnight marble</string>
     <string name="launcher_theme_water">Moonlit water</string>
-    <string name="launcher_theme_changed">Theme switched. Some launchers refresh after returning home or restarting.</string>
+    <string name="launcher_theme_changed">Theme switched. The matching visual appears on the next launch.</string>
 
     <!-- Live -->
     <string name="live_pass">Pass</string>

@@ -2,14 +2,14 @@
 
     <!-- App -->
     <string name="app_name">影卓</string>
-    <string name="launcher_theme">桌面图标主题</string>
+    <string name="launcher_theme">图标与启动主题</string>
     <string name="launcher_theme_h3">H3 · 曜石鎏金</string>
     <string name="launcher_theme_wood">深色胡桃木</string>
     <string name="launcher_theme_glass">曜黑玻璃</string>
     <string name="launcher_theme_lotus">荷叶露珠</string>
     <string name="launcher_theme_marble">午夜大理石</string>
     <string name="launcher_theme_water">月下水面</string>
-    <string name="launcher_theme_changed">主题已切换；部分桌面返回主页或重启后刷新。</string>
+    <string name="launcher_theme_changed">主题已切换，下次启动可见新的配套画面。</string>
 
     <!-- Live -->
     <string name="live_pass">密码</string>

@@ -1,0 +1,4 @@
+<resources>
+    <bool name="launcher_theme_changes_component">true</bool>
+    <bool name="launcher_theme_mobile">false</bool>
+</resources>
