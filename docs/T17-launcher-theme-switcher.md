@@ -22,3 +22,13 @@ Android Manifest 为每套主题声明一个指向 `HomeActivity` 的 `activity-
 - `:app:assembleMobileArm64_v8aDebug`：通过。
 - APK 资源清单：应用标签为「影卓」，六个 Launcher 别名均打包，H3 默认启用。
 - 本地 Debug APK 与电视当前公开 Beta 的签名不同，因此未卸载覆盖，避免清除电视端现有数据；真机覆盖验证应使用 CI 生成的正式签名 APK。
+
+## 电视覆盖安装实测（2026-09-25）
+
+- 使用私有 Actions 运行 `36113280379` 构建正式签名 Leanback ARM64 APK，不创建公开 Release。
+- 新 APK 与电视现装版本证书 SHA-256 均为 `6e6f3fd89bdb3bc6f20ed911a1a61c6717aaf3e08d528b44fd3ff6e353ba0e19`。
+- `adb install -r` 覆盖成功；UID、`dataDir` 与首次安装时间保持不变，首页历史数据仍在。
+- H3 别名可以正常启动应用；设置页显示六个主题。切换到曜黑玻璃后系统唯一 Leanback 入口变为 `.launcher.Glass`，恢复 H3 后变回 `.launcher.H3`。
+- **发布阻断项**：Projectivy Launcher 不能把 `activity-alias` 作为原应用卡片继续展示。强制停止桌面和完整重启电视后仍不出现影卓卡片；系统 `cmd package resolve-activity` 同时能正确解析 H3，证明问题位于第三方桌面对动态别名的兼容层。
+
+在解决 Projectivy 固定卡片迁移前，不应把当前动态别名方案发布为公开 Beta。可选方向是 TV 固定使用稳定 H3 组件、仅手机动态换图标，或在主题切换后通过 Projectivy/Android 固定快捷方式接口重新固定当前主题卡片。
