@@ -94,6 +94,7 @@ import com.fongmi.android.tv.model.SearchProgress;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.player.PlayerHelper;
 import com.fongmi.android.tv.player.PlayerManager;
+import com.fongmi.android.tv.player.autoskip.LocalAutoSkipCoordinator;
 import com.fongmi.android.tv.player.diagnostic.PanEndpointParser;
 import com.fongmi.android.tv.player.karaoke.KaraokeController;
 import com.fongmi.android.tv.player.karaoke.KaraokePitchTrackGenerator;
@@ -263,6 +264,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     private SiteViewModel mViewModel;
     private List<String> mBroken;
     private History mHistory;
+    private final LocalAutoSkipCoordinator mAutoSkip = new LocalAutoSkipCoordinator();
     private boolean fullscreen;
     private boolean initAuto;
     private boolean autoMode;
@@ -4761,6 +4763,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     }
 
     private void setOpening(long opening) {
+        mAutoSkip.markManualOpening(mHistory, player(), getHistoryKey());
         mHistory.setOpening(opening);
         mBinding.control.action.opening.setText(opening <= 0 ? getString(R.string.play_op) : Util.timeMs(mHistory.getOpening()));
         syncHistory();
@@ -4786,6 +4789,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     }
 
     private void setEnding(long ending) {
+        mAutoSkip.markManualEnding(mHistory, player(), getHistoryKey());
         mHistory.setEnding(ending);
         mBinding.control.action.ending.setText(ending <= 0 ? getString(R.string.play_ed) : Util.timeMs(mHistory.getEnding()));
         syncHistory();
@@ -5491,6 +5495,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     @Override
     protected void onTitlesChanged() {
         setTitleVisible();
+        inspectAutoSkipCandidate();
     }
 
     @Override
@@ -5534,6 +5539,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
                 recordPlayHealth(true, "");
                 hideProgress();
                 refreshLyrics();
+                inspectAutoSkipCandidate();
                 player().reset();
                 break;
             case Player.STATE_ENDED:
@@ -5588,7 +5594,8 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         duration = mHistory.getDuration();
         PlaybackEventCollector.get().onProgress(mHistory, player());
         if (mHistory.canSave() && mHistory.canSync()) syncHistory();
-        if (mHistory.getEnding() > 0 && duration > 0 && mHistory.getEnding() + position >= duration) {
+        long ending = mAutoSkip.effectiveEnding(mHistory, player(), getHistoryKey());
+        if (ending > 0 && duration > 0 && ending + position >= duration) {
             checkEnded(false);
         }
     }
@@ -5641,8 +5648,14 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
             mHistory.resetPlaybackPosition();
             syncHistory();
         }
-        long position = Math.max(mHistory.getOpening(), mHistory.getPosition());
+        long opening = mAutoSkip.effectiveOpening(mHistory, player(), getHistoryKey());
+        long position = Math.max(opening, mHistory.getPosition());
         return position > 0 ? position : C.TIME_UNSET;
+    }
+
+    private void inspectAutoSkipCandidate() {
+        if (!isOwner() || mHistory == null || service() == null) return;
+        mAutoSkip.inspect(this, mHistory, player(), getHistoryKey());
     }
 
     private void checkEnded(boolean notify) {
