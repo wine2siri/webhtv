@@ -120,6 +120,7 @@ import com.fongmi.android.tv.setting.LyricsSetting;
 import com.fongmi.android.tv.setting.PlayerButtonSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.sync.InjoyFavoriteSync;
 import com.fongmi.android.tv.setting.SiteHealthStore;
 import com.fongmi.android.tv.ui.adapter.EpisodeAdapter;
 import com.fongmi.android.tv.ui.adapter.EpisodeGroupAdapter;
@@ -1872,6 +1873,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         Notify.show(keep != null ? R.string.keep_del : R.string.keep_add);
         if (keep != null) keep.delete();
         else createKeep();
+        InjoyFavoriteSync.syncSoon(true);
         checkKeepImg();
     }
 

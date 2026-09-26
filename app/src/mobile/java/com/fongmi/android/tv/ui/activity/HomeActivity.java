@@ -36,6 +36,7 @@ import com.fongmi.android.tv.receiver.ShortcutReceiver;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.setting.Setting;
+import com.fongmi.android.tv.sync.InjoyFavoriteSync;
 import com.fongmi.android.tv.ui.base.BaseActivity;
 import com.fongmi.android.tv.ui.custom.FragmentStateManager;
 import com.fongmi.android.tv.ui.fragment.SettingEnhanceFragment;
@@ -88,6 +89,7 @@ public class HomeActivity extends BaseActivity implements NavigationBarView.OnIt
         setTheme(R.style.Theme_App);
         super.onCreate(savedInstanceState);
         LauncherThemeTransition.show(this, savedInstanceState == null);
+        App.post(() -> InjoyFavoriteSync.syncSoon(), 5000);
     }
 
     @Override
