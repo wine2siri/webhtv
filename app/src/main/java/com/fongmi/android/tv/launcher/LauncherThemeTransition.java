@@ -17,7 +17,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import com.fongmi.android.tv.R;
 
-/** A short theme-aware brand reveal layered over the home screen while it renders. */
+/** The single theme-aware InJoy brand reveal layered over the home screen while it renders. */
 public final class LauncherThemeTransition {
 
     private LauncherThemeTransition() {
@@ -45,25 +45,37 @@ public final class LauncherThemeTransition {
         brand.addView(icon, new LinearLayout.LayoutParams(iconSize, iconSize));
 
         TextView name = new TextView(activity);
-        name.setText(R.string.app_name);
+        name.setText(R.string.startup_brand_name);
         name.setTextColor(Color.WHITE);
-        name.setTextSize(mobile ? 23 : 27);
+        name.setTextSize(mobile ? 25 : 31);
         name.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         name.setGravity(Gravity.CENTER);
-        name.setLetterSpacing(0.12f);
+        name.setLetterSpacing(0.08f);
         LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        nameParams.topMargin = dp(activity, 14);
+        nameParams.topMargin = dp(activity, 12);
         brand.addView(name, nameParams);
+
+        TextView tagline = new TextView(activity);
+        tagline.setText(R.string.startup_brand_tagline);
+        tagline.setTextColor(Color.rgb(190, 204, 222));
+        tagline.setTextSize(mobile ? 12 : 15);
+        tagline.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+        tagline.setGravity(Gravity.CENTER);
+        tagline.setLetterSpacing(0.16f);
+        LinearLayout.LayoutParams taglineParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        taglineParams.topMargin = dp(activity, 8);
+        brand.addView(tagline, taglineParams);
 
         FrameLayout.LayoutParams brandParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
         overlay.addView(brand, brandParams);
         decor.addView(overlay, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         brand.setAlpha(0f);
-        brand.setScaleX(0.88f);
-        brand.setScaleY(0.88f);
-        brand.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(360).setInterpolator(new DecelerateInterpolator()).start();
-        overlay.postDelayed(() -> overlay.animate().alpha(0f).setDuration(260).withEndAction(() -> decor.removeView(overlay)).start(), 650);
+        brand.setScaleX(0.92f);
+        brand.setScaleY(0.92f);
+        brand.setTranslationY(dp(activity, 10));
+        brand.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f).setDuration(380).setInterpolator(new DecelerateInterpolator()).start();
+        overlay.postDelayed(() -> overlay.animate().alpha(0f).setDuration(250).withEndAction(() -> decor.removeView(overlay)).start(), 700);
     }
 
     private static int dp(Activity activity, int value) {

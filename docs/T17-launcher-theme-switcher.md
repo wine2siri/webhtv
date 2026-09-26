@@ -7,6 +7,7 @@
 - 支持六套主题：H3、深色胡桃木、曜黑玻璃、荷叶露珠、午夜大理石、月下水面。
 - 手机端和 TV 端设置页均提供「图标与启动主题」入口。
 - 六套主题现在同时驱动启动过场：材质背景、H3 标志与「影卓」字标会做 650ms 的缩放淡入，再以 260ms 淡出，不阻塞首页初始化。
+- 冷启动不再先显示历史 WebHTV 位图；系统等待阶段只显示同色背景，应用首帧只播放一套“InJoy / 影卓智能追剧引擎”品牌过场。
 - 手机端继续切换 Launcher 图标；TV 端固定 H3 桌面入口和 Banner，主题差异在启动过场中可见，以保证 Projectivy 卡片稳定。
 
 ## 实现
@@ -27,6 +28,12 @@
 - 方案 B（为每个主题建立独立启动 Activity）：能提前决定系统启动资源，但仍会改变桌面组件身份，且增加双重启动风险，否决。
 - 方案 C（采用）：TV 稳定单一启动组件 + 应用内不阻塞主题过场；手机保留动态图标。兼容 Projectivy，启动过场总时长 910ms，不引入额外 Activity。
 - 回滚：删除 `LauncherThemeTransition` 调用并恢复 TV 别名；偏好值无需迁移。
+
+### 双品牌修正（2026-09-26）
+
+- 实机观察到旧 `startup_logo.png` 的 WebHTV 品牌先于 InJoy 主题过场显示，根因是 legacy `windowBackground` 仍叠加历史全屏位图。
+- Android 官方建议启动窗口使用单一不透明背景，并由系统 SplashScreen/应用首帧完成品牌衔接；也明确提醒旧自定义启动画面可能造成重复启动体验：<https://developer.android.com/develop/ui/views/launch/splash-screen>、<https://developer.android.com/develop/ui/views/launch/splash-screen/migrate>（访问于 2026-09-26）。
+- 采用最窄修复：移除 legacy 启动窗口中的 WebHTV 位图，仅保留主题背景；继续复用已有非阻塞 InJoy 过场，不增加 Splash Activity。过场总时长 950ms，标志、字标、副标题统一淡入后退出。
 
 ## 验证
 

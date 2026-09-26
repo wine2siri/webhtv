@@ -2,6 +2,8 @@
 
     <!-- App -->
     <string name="app_name">影卓</string>
+    <string name="startup_brand_name">InJoy</string>
+    <string name="startup_brand_tagline">影卓智能追剧引擎</string>
     <string name="launcher_theme">Icon and launch theme</string>
     <string name="launcher_theme_h3">H3 · Obsidian gold</string>
     <string name="launcher_theme_wood">Dark walnut</string>
