@@ -93,6 +93,7 @@ import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.CustomTarget;
 import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.playback.PlaybackOrientation;
 import com.fongmi.android.tv.player.PlayerHelper;
@@ -223,6 +224,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private Observer<Result> mObserveDetail;
     private Observer<Result> mObservePlayer;
     private Observer<Result> mObserveSearch;
+    private Observer<Result> mObserveAction;
     private EpisodeAdapter mEpisodeAdapter;
     private EpisodeGroupAdapter mEpisodeGroupAdapter;
     private SpaceItemDecoration mEpisodeDecoration;
@@ -626,6 +628,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mObserveDetail = this::setDetail;
         mObservePlayer = this::setPlayer;
         mObserveSearch = this::setSearch;
+        mObserveAction = result -> Notify.show(result.getMsg());
         mBroken = new ArrayList<>();
         mClock = Clock.create();
         mBinding.audioLyrics.setAudioStageMode(true);
@@ -1225,6 +1228,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mViewModel.getResult().observeForever(mObserveDetail);
         mViewModel.getPlayer().observeForever(mObservePlayer);
         mViewModel.getSearch().observeForever(mObserveSearch);
+        mViewModel.getAction().observeForever(mObserveAction);
     }
 
     private void checkId() {
@@ -1445,6 +1449,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void onItemClick(Flag item) {
+        if (!item.getEpisodes().isEmpty() && WishlistActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (item.isSelected()) return;
         mFlagAdapter.setSelected(item);
         scrollToPosition(mBinding.flag, mFlagAdapter.getPosition());
@@ -6607,6 +6612,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         mViewModel.getResult().removeObserver(mObserveDetail);
         mViewModel.getPlayer().removeObserver(mObservePlayer);
         mViewModel.getSearch().removeObserver(mObserveSearch);
+        mViewModel.getAction().removeObserver(mObserveAction);
         SiteHealthStore.flush();
         super.onDestroy();
     }

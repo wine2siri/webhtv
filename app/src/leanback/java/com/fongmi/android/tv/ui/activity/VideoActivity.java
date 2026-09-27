@@ -90,6 +90,7 @@ import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.CustomTarget;
 import com.fongmi.android.tv.model.SiteViewModel;
+import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
 import com.fongmi.android.tv.model.SearchProgress;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.player.PlayerHelper;
@@ -208,6 +209,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     private Observer<Result> mObserveDetail;
     private Observer<Result> mObservePlayer;
     private Observer<Result> mObserveSearch;
+    private Observer<Result> mObserveAction;
     private Observer<SearchProgress> mObserveSearchProgress;
     private EpisodeAdapter mEpisodeAdapter;
     private QualityAdapter mQualityAdapter;
@@ -601,6 +603,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mObserveDetail = this::setDetail;
         mObservePlayer = this::setPlayer;
         mObserveSearch = this::setSearch;
+        mObserveAction = result -> Notify.show(result.getMsg());
         mObserveSearchProgress = this::setSearchProgress;
         mBroken = new ArrayList<>();
         mR1 = this::hideControl;
@@ -1075,6 +1078,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mViewModel.getResult().observeForever(mObserveDetail);
         mViewModel.getPlayer().observeForever(mObservePlayer);
         mViewModel.getSearch().observeForever(mObserveSearch);
+        mViewModel.getAction().observeForever(mObserveAction);
         mViewModel.getSearchProgress().observeForever(mObserveSearchProgress);
     }
 
@@ -1282,6 +1286,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
 
     @Override
     public void onItemClick(Flag item) {
+        if (!item.getEpisodes().isEmpty() && WishlistActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (mFlagAdapter.getItemCount() == 0 || item.isSelected()) return;
         int oldPosition = mFlagAdapter.getSelectedPosition();
         mFlagAdapter.setSelected(item);
@@ -6460,6 +6465,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mViewModel.getResult().removeObserver(mObserveDetail);
         mViewModel.getPlayer().removeObserver(mObservePlayer);
         mViewModel.getSearch().removeObserver(mObserveSearch);
+        mViewModel.getAction().removeObserver(mObserveAction);
         mViewModel.getSearchProgress().removeObserver(mObserveSearchProgress);
         SiteHealthStore.flush();
         super.onDestroy();
