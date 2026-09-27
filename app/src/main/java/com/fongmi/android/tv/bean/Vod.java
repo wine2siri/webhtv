@@ -70,6 +70,8 @@ public class Vod implements Parcelable, Diffable<Vod> {
     private String vodTag;
     @SerializedName("action")
     private String action;
+    @SerializedName("vod_episode_order")
+    private String episodeOrder;
     @SerializedName("cate")
     private Cate cate;
     @SerializedName("style")
@@ -104,6 +106,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.vodPlayUrl = in.readString();
         this.vodTag = in.readString();
         this.action = in.readString();
+        this.episodeOrder = in.readString();
         this.land = (Integer) in.readValue(Integer.class.getClassLoader());
         this.circle = (Integer) in.readValue(Integer.class.getClassLoader());
         this.ratio = (Float) in.readValue(Float.class.getClassLoader());
@@ -209,6 +212,10 @@ public class Vod implements Parcelable, Diffable<Vod> {
         return TextUtils.isEmpty(action) ? "" : action;
     }
 
+    public String getEpisodeOrder() {
+        return TextUtils.isEmpty(episodeOrder) ? "" : episodeOrder;
+    }
+
     public Cate getCate() {
         return cate;
     }
@@ -286,6 +293,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         copy.vodPlayUrl = vodPlayUrl;
         copy.vodTag = vodTag;
         copy.action = action;
+        copy.episodeOrder = episodeOrder;
         copy.cate = cate;
         copy.style = style;
         copy.land = land;
@@ -395,6 +403,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         dest.writeString(this.vodPlayUrl);
         dest.writeString(this.vodTag);
         dest.writeString(this.action);
+        dest.writeString(this.episodeOrder);
         dest.writeValue(this.land);
         dest.writeValue(this.circle);
         dest.writeValue(this.ratio);

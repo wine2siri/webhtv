@@ -112,6 +112,7 @@ import com.fongmi.android.tv.player.lut.LutStore;
 import com.fongmi.android.tv.player.mpv.MpvConfigStore;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.setting.DanmakuSetting;
+import com.fongmi.android.tv.setting.EpisodeOrderSetting;
 import com.fongmi.android.tv.setting.LyricsSetting;
 import com.fongmi.android.tv.setting.PlayerButtonSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
@@ -1520,13 +1521,21 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
 
     @Override
     public void onRevSort() {
-        mHistory.setRevSort(!mHistory.isRevSort());
+        boolean descending = !mHistory.isRevSort();
+        mHistory.setRevSort(descending);
+        mHistory.setRevPlay(descending);
+        EpisodeOrderSetting.put(mHistory.getVodName(), descending);
         reverseEpisode(false);
     }
 
     @Override
     public void onRevPlay(TextView view) {
-        mHistory.setRevPlay(!mHistory.isRevPlay());
+        boolean descending = !mHistory.isRevPlay();
+        boolean reverseList = mHistory.isRevSort() != descending;
+        mHistory.setRevSort(descending);
+        mHistory.setRevPlay(descending);
+        EpisodeOrderSetting.put(mHistory.getVodName(), descending);
+        if (reverseList) reverseEpisode(false);
         view.setText(mHistory.getRevPlayText());
         Notify.show(mHistory.getRevPlayHint());
     }
@@ -3692,6 +3701,19 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
     private void checkHistory(Vod item) {
         mHistory = History.find(getHistoryKey());
         mHistory = mHistory == null ? createHistory(item) : mHistory;
+        Boolean descending = EpisodeOrderSetting.get(item.getName());
+        if ("desc".equalsIgnoreCase(item.getEpisodeOrder())) {
+            descending = true;
+            EpisodeOrderSetting.put(item.getName(), true);
+        } else if (descending == null && mHistory.isRevSort()) {
+            // Migrate an existing per-source choice so future source switches retain it.
+            descending = true;
+            EpisodeOrderSetting.put(item.getName(), true);
+        }
+        if (descending != null) {
+            mHistory.setRevSort(descending);
+            mHistory.setRevPlay(descending);
+        }
         if (!TextUtils.isEmpty(getWallPic())) mHistory.setWallPic(getWallPic());
         if (!TextUtils.isEmpty(getMark())) mHistory.setVodRemarks(getMark());
         if (Setting.isIncognito() && mHistory.getKey().equals(getHistoryKey())) mHistory.delete();
