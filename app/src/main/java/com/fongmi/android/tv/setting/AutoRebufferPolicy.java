@@ -35,9 +35,11 @@ final class AutoRebufferPolicy {
 
     static int startBufferMs(int rebufferMs) {
         return switch (normalize(rebufferMs)) {
-            case MAX_REBUFFER_MS -> 8_000;
-            case 8_000 -> 5_000;
-            case 5_000 -> 3_000;
+            // Recovery may stay conservative after an unstable session, but it
+            // must not make every future cold start wait 5-8 seconds. Keep the
+            // high recovery threshold and cap only the initial playback gate.
+            case MAX_REBUFFER_MS, 8_000 -> 3_000;
+            case 5_000 -> 2_000;
             default -> DEFAULT_START_BUFFER_MS;
         };
     }
