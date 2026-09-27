@@ -22,5 +22,7 @@ Keep the InJoy navigation usable after a canceled first Python download, and ens
 - Protected pre-existing paths: `.artifacts/`, `app/.cxx/`.
 - Implemented: retryable Python spider initialization and fork-owned GitHub update endpoints.
 - Verified: `:app:testLeanbackArm64_v8aDebugUnitTest --tests com.fongmi.android.tv.api.loader.PyLoaderTest` and `:app:compileLeanbackArm64_v8aReleaseJavaWithJavac` passed together on 2026-09-28 (112 tasks, 2m56s).
-- Unverified runtime step: cleared-cache TV cold start after the signed Beta is installed.
-- Next action: publish the signed Beta, install it on the TV, and verify a cleared-cache cold start.
+- Published: GitHub Actions run `36356903312` produced public pre-release `v5.6.7-beta-202609280657` from commit `6d0af0783c2ca0d3d68b13c752737133051e493c`; the Leanback ARM64 APK matched manifest SHA-256 `f03851422f910423567649d6b52cc8ddf9144ebcd23aa3c9c2e4e308b5d1d767`.
+- TV verification: the signed APK installed successfully on `192.168.0.230:5555`. A canceled first Python download returned a one-shot failure, the same process retried instead of retaining `SpiderNull`, and the UI then displayed the InJoy navigation categories, recent-watch posters, episode labels, and update row without a fatal exception.
+- Runtime caveat: Android release permissions do not allow ADB to delete only the private Python cache. The focused regression test covers the empty-cache transient-failure contract; device verification exercised the actual transient interruption and in-process recovery without clearing application data.
+- Next action: keep this Beta as the rollback-tested navigation hotfix baseline.
