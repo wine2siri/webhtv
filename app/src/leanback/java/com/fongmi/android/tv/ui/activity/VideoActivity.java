@@ -131,6 +131,7 @@ import com.fongmi.android.tv.ui.adapter.QuickAdapter;
 import com.fongmi.android.tv.ui.custom.CustomKeyDownVod;
 import com.fongmi.android.tv.ui.custom.CustomMovement;
 import com.fongmi.android.tv.ui.custom.CustomSeekView;
+import com.fongmi.android.tv.ui.custom.FlagSelectionListener;
 import com.fongmi.android.tv.ui.custom.AudioPlayerBackgroundDrawable;
 import com.fongmi.android.tv.ui.custom.KaraokeResultView;
 import com.fongmi.android.tv.ui.custom.PlayerOsdController;
@@ -744,18 +745,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         mBinding.control.action.opening.setOnLongClickListener(view -> onOpeningReset());
         setActionFocusScroll();
         mBinding.video.setOnTouchListener((view, event) -> dispatchDiscMenuTouch(event) || mKeyDown.onTouchEvent(event));
-        mBinding.flag.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
-            @Override
-            public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
-                // fix crash: 此回调可能在 RecyclerView 布局计算中触发, 同步调 onItemClick →
-                // notifyItemsChanged 会 IllegalStateException "Cannot call this method while
-                // RecyclerView is computing a layout" (换源面板滚动必崩); post 到主线程队列末尾执行
-                if (position < 0 || position >= mFlagAdapter.getItemCount()) return;
-                Flag item = mFlagAdapter.get(position);
-                if (item.isSelected()) return;
-                mBinding.flag.post(() -> { if (!item.isSelected()) onItemClick(item); });
-            }
-        });
+        mBinding.flag.addOnChildViewHolderSelectedListener(new FlagSelectionListener(mBinding.flag, mFlagAdapter, this));
         mBinding.episode.addOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() {
             @Override
             public void onChildViewHolderSelected(@NonNull RecyclerView parent, @Nullable RecyclerView.ViewHolder child, int position, int subposition) {
@@ -1287,6 +1277,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
 
     @Override
     public void onItemClick(Flag item) {
+        if (isFinishing() || isDestroyed()) return;
         if (!item.getEpisodes().isEmpty() && TrackingActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (!item.getEpisodes().isEmpty() && WishlistActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (mFlagAdapter.getItemCount() == 0 || item.isSelected()) return;

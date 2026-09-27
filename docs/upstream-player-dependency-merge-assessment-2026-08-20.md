@@ -2,6 +2,32 @@
 
 ## Recovery anchor
 
+## 2026-09-28 可读恢复索引与上游审计
+
+> 原文历史段落存在早期编码损坏；以下区块作为本轮新增任务的权威可读索引，不改写历史记录。
+
+| 顺序 | 稳定 ID | 层级 | 主题 | 状态 | 唯一文档 |
+| ---: | --- | --- | --- | --- | --- |
+| C4 | `C4` | App / Leanback | 线路选择回调与 RecyclerView 布局冲突 | 已实施；Android 9 Robolectric 8/8 全绿，Leanback ARM64 Release Java 编译通过；电视端多线路实播待复测 | [C4-leanback-route-layout.md](C4-leanback-route-layout.md) |
+
+### 上游提交处置台账
+
+本轮上游范围为本地基线 `c9db6898f94d146fb87d0a981ab63023b5109cce` 之后、`upstream/main` 截至 `d187f6ae8bfaf0a4720724281d0a91186c57f73d` 的 8 个提交：
+
+| 完整提交 ID | 上游主题 | 处置 | 理由 |
+| --- | --- | --- | --- |
+| `fa09d226f9f3763bc0f50167d6485178438fad52` | defer leanback cloud route selection until layout completes | 纳入 `C4`，按本地 `VideoActivity` 适配 | 纯 UI 时序修复、风险低，直接对应已知布局冲突；保留本地追更/心愿动作逻辑 |
+| `8d7ccf42b449db6ae12eb04a38f95196ef29c737` | E11 audio startup design approval | 候选，延后至独立 `E11` 阶段 | 仅设计记录，但属于高风险音频链路整体方案，不与 C4 混合 |
+| `123d871c027eb686702766bca995f616e8d2bd1e` | remember direct audio failures per media and route | 候选，延后至独立 `E11` 阶段 | 大范围策略与状态记忆变更，需要设备播放证据和单独回滚边界 |
+| `e9fef2b90ee8aa634327c2c179eb3dc5d22cb1be` | first-playback recovery plan | 候选，延后至独立 `E11` 阶段 | 研究文档应随 E11 决策整体审阅 |
+| `24fa078d2dc8a404fad23fc30972e5fc4a8a1b5b` | honor disabled passthrough | 候选，延后至独立 `E11` 阶段 | 改变所有编码音频输出策略，不能作为低风险 UI 修复捎带合入 |
+| `8e4d9333de8ea7346491e71a0b1ab6858a852298` | recover stalled audio startup | 候选，延后至独立 `E11` 阶段 | 约 955 行净变更并新增 renderer/integration test，必须独立验证 |
+| `d187f6ae8bfaf0a4720724281d0a91186c57f73d` | avoid package-private recoverable access | 候选，随 E11 测试一并处理 | 只修 E11 测试编译，不应先于其生产实现单独落地 |
+| `f836d419518d1a93d4ff77414a88558f3854c7e3` | PCM fallback on compressed-audio stall | 候选，延后至独立 `E11` 阶段 | 播放策略变更，需目标设备首播/seek/直通回归；上游也注明未做 Sony 实机验证 |
+
+- `fa09d226...upstream/main` 对 C4 四个受影响代码/测试文件没有后续修订或回滚，因此本轮采用的实现仍是上游当前形态。
+- E11 七个提交均未拒绝；只是隔离到独立阶段，避免 UI 热修复与音频内核风险共用同一提交、测试结论和回滚点。
+
 - 2026-09-18 `AV-DIAG-01` [14.18 单视频轨无效重选与重复能力日志优化](AV-DIAG-01-playback-diagnostics.md#1418-单视频轨无效重选与重复能力日志优化2026-09-18)：两项优化已实现，32项定向用例通过；日志35的18次实际查询回放将候选事件从222条减至56条。TV32快速Release在3分12秒内打包成功，APK/ZIP/签名证据及SHA-256见唯一文档；未安装、实际电视掉帧收益待在线日志对照。guard `AV-DIAG-01-EXO-RESELECT`，基线 `4818057cd64c2c62c94e7208d9121719b4d11fe0`，保护104个 `app/.cxx/` 文件；仅App Java和定向测试，native保持；本单元原子提交/tag收尾。
 
 - 2026-09-17 `C-AVS3` [AVS3 视频解码](C-AVS3-video-decoding.md)：HPM 15.0 的0x32软件后端已提交 `edf4324034fe1681a658dd4557dd8451fcfdb792`，用户接受设备4K50软件吞吐限制；重复续播seek已修复于 `13053755eaea00aa9c6449e8ad55c2ccf1fbc68a`。获批的MPV AVS3 MediaCodec接入已完成双ARM库与Mobile64 APK；ASan/UBSan、完整补丁链、双ABI/16KB/导出、9项Java检查及手机真实JNI/NDK无硬件拒绝通过，guard `C-AVS3-mpv-mediacodec`收尾。硬解出帧/profile/性能仍需具备AVS3硬件的目标设备实测；手动解码、FEL/ASS/软件后端与其他native制品保持。
