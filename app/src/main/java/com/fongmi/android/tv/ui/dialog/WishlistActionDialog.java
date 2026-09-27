@@ -4,8 +4,6 @@ import android.util.Base64;
 
 import androidx.fragment.app.FragmentActivity;
 
-import com.fongmi.android.tv.R;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -55,13 +53,13 @@ public final class WishlistActionDialog {
             operations.add("delete");
         }
 
-        String message = payload.exists
-                ? "当前状态：" + statusText(payload) + "\n请选择对当前心愿执行的操作。"
-                : "当前尚未订阅。加入后会自动搜索并持续追更。";
-        new MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_WebHTV_LightDialog)
-                .setTitle(payload.name)
-                .setMessage(message)
-                .setItems(labels.toArray(new String[0]), (dialog, which) -> {
+        String state = payload.exists ? "当前状态：" + statusText(payload) : "当前尚未订阅";
+        ChoiceDialog.showSingle(
+                activity.getSupportFragmentManager(),
+                payload.name + "\n" + state,
+                labels.toArray(new String[0]),
+                -1,
+                which -> {
                     String operation = operations.get(which);
                     if ("cancel".equals(operation)) {
                         confirmCancel(activity, payload, token, listener);
@@ -70,28 +68,26 @@ public final class WishlistActionDialog {
                     } else {
                         listener.onAction(PREFIX + operation + ":" + token);
                     }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                });
         return true;
     }
 
     private static void confirmCancel(FragmentActivity activity, Payload payload, String token, Listener listener) {
-        new MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_WebHTV_LightDialog)
-                .setTitle("确认取消订阅")
-                .setMessage("取消《" + payload.name + "》的订阅？\n\n已转存的网盘文件会保留。")
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton("确认取消", (dialog, which) -> listener.onAction(PREFIX + "cancel:" + token))
-                .show();
+        ChoiceDialog.showConfirm(
+                activity.getSupportFragmentManager(),
+                "确认取消订阅",
+                "取消《" + payload.name + "》的订阅？\n\n已转存的网盘文件会保留。",
+                "确认取消",
+                () -> listener.onAction(PREFIX + "cancel:" + token));
     }
 
     private static void confirmDelete(FragmentActivity activity, Payload payload, String token, Listener listener) {
-        new MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_WebHTV_LightDialog)
-                .setTitle("确认取关并删除")
-                .setMessage("将取消《" + payload.name + "》的订阅，并把对应网盘目录移入回收站。\n\n此操作只允许删除与片名完全匹配的独立目录。")
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton("确认删除", (dialog, which) -> listener.onAction(PREFIX + "delete:" + token))
-                .show();
+        ChoiceDialog.showConfirm(
+                activity.getSupportFragmentManager(),
+                "确认取关并删除",
+                "将取消《" + payload.name + "》的订阅，并把对应网盘目录移入回收站。\n\n此操作只允许删除与片名完全匹配的独立目录。",
+                "确认删除",
+                () -> listener.onAction(PREFIX + "delete:" + token));
     }
 
     private static String statusText(Payload payload) {
