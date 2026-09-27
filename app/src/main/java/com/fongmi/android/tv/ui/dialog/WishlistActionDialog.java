@@ -42,11 +42,6 @@ public final class WishlistActionDialog {
             operations.add("status");
             labels.add("立即订阅 / 重新搜索");
             operations.add("subscribe");
-            if ("tv".equals(payload.mediaType)) {
-                boolean desc = "desc".equals(payload.episodeOrder);
-                labels.add(desc ? "恢复顺序显示与播放" : "锁定倒序追更");
-                operations.add(desc ? "order-normal" : "order-desc");
-            }
             labels.add("取消订阅（保留网盘文件）");
             operations.add("cancel");
             labels.add("取关并删除网盘文件");
@@ -111,7 +106,6 @@ public final class WishlistActionDialog {
         String mediaType = "";
         String status = "";
         String subStatus = "";
-        String episodeOrder = "normal";
         boolean exists;
 
         static Payload parse(String token) {
@@ -123,7 +117,6 @@ public final class WishlistActionDialog {
                 payload.mediaType = text(object, "media_type");
                 payload.status = text(object, "status");
                 payload.subStatus = text(object, "sub_status");
-                payload.episodeOrder = text(object, "episode_order");
                 payload.exists = object.has("exists") && object.get("exists").getAsBoolean();
                 return payload;
             } catch (Exception ignored) {

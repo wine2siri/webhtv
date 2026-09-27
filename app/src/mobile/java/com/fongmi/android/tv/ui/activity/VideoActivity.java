@@ -94,6 +94,7 @@ import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.CustomTarget;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
+import com.fongmi.android.tv.ui.dialog.TrackingActionDialog;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.playback.PlaybackOrientation;
 import com.fongmi.android.tv.player.PlayerHelper;
@@ -1449,6 +1450,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     @Override
     public void onItemClick(Flag item) {
+        if (!item.getEpisodes().isEmpty() && TrackingActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (!item.getEpisodes().isEmpty() && WishlistActionDialog.show(this, item.getEpisodes().get(0).getUrl(), action -> mViewModel.action(getKey(), action))) return;
         if (item.isSelected()) return;
         mFlagAdapter.setSelected(item);

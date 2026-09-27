@@ -24,6 +24,7 @@ import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.activity.SearchActivity;
 import com.fongmi.android.tv.ui.activity.VideoActivity;
 import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
+import com.fongmi.android.tv.ui.dialog.TrackingActionDialog;
 import com.fongmi.android.tv.ui.adapter.VodAdapter;
 import com.fongmi.android.tv.ui.base.BaseFragment;
 import com.fongmi.android.tv.ui.custom.CustomScroller;
@@ -195,6 +196,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
     @Override
     public void onItemClick(Vod item) {
         if (item.isAction()) {
+            if (TrackingActionDialog.show(requireActivity(), item.getAction(), action -> mViewModel.action(getKey(), action))) return;
             if (WishlistActionDialog.show(requireActivity(), item.getAction(), action -> mViewModel.action(getKey(), action))) return;
             mViewModel.action(getKey(), item.getAction());
         } else if (item.isFolder()) {
