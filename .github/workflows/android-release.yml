@@ -82,12 +82,14 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
 
-      - name: Run WebSocket danmaku tests
+      - name: Run release-critical unit tests
         run: |
           chmod +x ./gradlew
           ./gradlew \
             :app:testMobileArm64_v8aDebugUnitTest \
             --tests 'com.fongmi.android.tv.player.danmaku.*' \
+            --tests 'com.fongmi.android.tv.player.autoskip.*' \
+            --tests 'com.fongmi.android.tv.setting.AutoRebufferPolicyTest' \
             --no-daemon
 
       - name: Resolve release tag
