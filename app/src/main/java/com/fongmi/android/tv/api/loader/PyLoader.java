@@ -32,17 +32,35 @@ public class PyLoader {
     }
 
     public Spider getSpider(String key, String api, String ext) {
-        return spiders.computeIfAbsent(key, k -> {
-            try {
-                Spider spider = loader.spider(api);
-                spider.siteKey = key;
-                spider.init(App.get(), normalizeExt(ext));
-                return spider;
-            } catch (Throwable e) {
-                e.printStackTrace();
-                return new SpiderNull();
-            }
+        return getOrCreate(spiders, key, () -> {
+            Spider spider = loader.spider(api);
+            spider.siteKey = key;
+            spider.init(App.get(), normalizeExt(ext));
+            return spider;
         });
+    }
+
+    static Spider getOrCreate(ConcurrentHashMap<String, Spider> spiders, String key, SpiderProvider provider) {
+        Spider cached = spiders.get(key);
+        if (cached != null) return cached;
+        Spider created = null;
+        try {
+            created = provider.create();
+            Spider winner = spiders.putIfAbsent(key, created);
+            if (winner == null) return created;
+            created.destroy();
+            return winner;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            if (created != null) created.destroy();
+            // A canceled or transient first download must not poison this site key
+            // for the lifetime of the process. The next request should retry.
+            return new SpiderNull();
+        }
+    }
+
+    interface SpiderProvider {
+        Spider create() throws Throwable;
     }
 
     private String normalizeExt(String ext) {
