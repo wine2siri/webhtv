@@ -93,6 +93,7 @@ import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
 import com.fongmi.android.tv.ui.dialog.TrackingActionDialog;
 import com.fongmi.android.tv.model.SearchProgress;
+import com.fongmi.android.tv.playback.NavigationSourceSelectionPolicy;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.player.PlayerHelper;
 import com.fongmi.android.tv.player.PlayerManager;
@@ -3691,7 +3692,10 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         if (empty) {
             startFlow();
         } else {
-            onItemClick(mHistory.getFlag());
+            Flag initial = NavigationSourceSelectionPolicy.preferRankedFirst(getKey(), getSite().getApi())
+                    ? item.getFlags().get(0)
+                    : mHistory.getFlag();
+            onItemClick(initial);
             if (mHistory.isRevSort()) reverseEpisode(true);
         }
     }

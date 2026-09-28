@@ -95,6 +95,7 @@ import com.fongmi.android.tv.impl.CustomTarget;
 import com.fongmi.android.tv.model.SiteViewModel;
 import com.fongmi.android.tv.ui.dialog.WishlistActionDialog;
 import com.fongmi.android.tv.ui.dialog.TrackingActionDialog;
+import com.fongmi.android.tv.playback.NavigationSourceSelectionPolicy;
 import com.fongmi.android.tv.playback.PlaybackEventCollector;
 import com.fongmi.android.tv.playback.PlaybackOrientation;
 import com.fongmi.android.tv.player.PlayerHelper;
@@ -4390,7 +4391,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
         } else if (preservePlayback) {
             restoreFlagSelectionWithoutPlayback();
         } else {
-            onItemClick(mHistory.getFlag());
+            Flag initial = NavigationSourceSelectionPolicy.preferRankedFirst(getKey(), getSite().getApi())
+                    ? item.getFlags().get(0)
+                    : mHistory.getFlag();
+            onItemClick(initial);
             if (mHistory.isRevSort()) reverseEpisode(true);
         }
         if (preservePlayback) SpiderDebug.log("karaoke-result", "configuration restore preserved playback key=%s episode=%s", player().getKey(), mHistory.getVodRemarks());
