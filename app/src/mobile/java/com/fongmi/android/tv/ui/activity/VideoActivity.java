@@ -118,6 +118,7 @@ import com.fongmi.android.tv.player.lut.LutStore;
 import com.fongmi.android.tv.player.mpv.MpvConfigStore;
 import com.fongmi.android.tv.service.PlaybackService;
 import com.fongmi.android.tv.setting.DanmakuSetting;
+import com.fongmi.android.tv.setting.EpisodeOrderSetting;
 import com.fongmi.android.tv.setting.LyricsSetting;
 import com.fongmi.android.tv.setting.PlayerButtonSetting;
 import com.fongmi.android.tv.setting.PlayerSetting;
@@ -1833,7 +1834,10 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     }
 
     private void onReverse() {
-        mHistory.setRevSort(!mHistory.isRevSort());
+        boolean descending = !mHistory.isRevSort();
+        mHistory.setRevSort(descending);
+        mHistory.setRevPlay(descending);
+        EpisodeOrderSetting.put(mHistory.getVodName(), descending);
         reverseEpisode(false);
     }
 
@@ -1898,7 +1902,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void checkNext(boolean notify) {
         setR1Callback();
-        Episode item = getAdjacentEpisode(1);
+        Episode item = getAdjacentEpisode(mHistory.isRevPlay() ? -1 : 1);
         if (SpiderDebug.isEnabled()) SpiderDebug.log("audio-auto-next", "fallback next notify=%s selected=%s name=%s adapter=%d", notify, item.isSelected(), item.getName(), mEpisodeAdapter.getItemCount());
         if (!item.isSelected()) onItemClick(item);
         else if (notify) Notify.show(R.string.error_play_next);
@@ -1906,7 +1910,7 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
 
     private void checkPrev() {
         setR1Callback();
-        Episode item = getAdjacentEpisode(-1);
+        Episode item = getAdjacentEpisode(mHistory.isRevPlay() ? 1 : -1);
         if (!item.isSelected()) onItemClick(item);
         else Notify.show(R.string.error_play_prev);
     }
@@ -4407,6 +4411,19 @@ public class VideoActivity extends PlaybackActivity implements Clock.Callback, C
     private void checkHistory(Vod item) {
         mHistory = History.find(getHistoryKey());
         mHistory = mHistory == null ? createHistory(item) : mHistory;
+        Boolean descending = EpisodeOrderSetting.get(item.getName());
+        if ("desc".equalsIgnoreCase(item.getEpisodeOrder())) {
+            descending = true;
+            EpisodeOrderSetting.put(item.getName(), true);
+        } else if (descending == null && mHistory.isRevSort()) {
+            // Migrate an existing per-source choice so future source switches retain it.
+            descending = true;
+            EpisodeOrderSetting.put(item.getName(), true);
+        }
+        if (descending != null) {
+            mHistory.setRevSort(descending);
+            mHistory.setRevPlay(descending);
+        }
         if (!TextUtils.isEmpty(getWallPic())) mHistory.setWallPic(getWallPic());
         if (!TextUtils.isEmpty(getMark())) mHistory.setVodRemarks(getMark());
         if (Setting.isIncognito() && mHistory.getKey().equals(getHistoryKey())) mHistory.delete();

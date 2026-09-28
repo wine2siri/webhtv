@@ -34,19 +34,19 @@ public final class TrackingActionDialog {
         labels.add(payload.followed ? "取消追更（不影响资源订阅）" : "加入追更");
         operations.add(payload.followed ? "unfollow" : "follow");
         if (payload.followed) {
-            labels.add(payload.pinned ? "取消置顶" : "置顶到追更中心");
+            labels.add(payload.pinned ? "取消置顶" : "置顶到追更首位");
             operations.add(payload.pinned ? "unpin" : "pin");
         }
         if ("tv".equals(payload.mediaType) || "anime".equals(payload.mediaType)) {
             boolean desc = "desc".equals(payload.displayOrder);
-            labels.add(desc ? "恢复顺序展示" : "锁定倒序展示");
+            labels.add(desc ? "恢复正常排序" : "最新集在前（连播按集数递增）");
             operations.add(desc ? "order-normal" : "order-desc");
         }
 
         String state = payload.followed ? "正在追更" : "尚未追更";
         ChoiceDialog.showSingle(
                 activity.getSupportFragmentManager(),
-                payload.name + "\n" + state + "；连播始终按集数递增",
+                payload.name + "\n" + state + " · 资源订阅与追更互不影响",
                 labels.toArray(new String[0]),
                 -1,
                 which -> {
@@ -55,8 +55,8 @@ public final class TrackingActionDialog {
                         ChoiceDialog.showConfirm(
                                 activity.getSupportFragmentManager(),
                                 "确认取消追更",
-                                "从追更中心移除《" + payload.name + "》？\n\n不会取消订阅，也不会删除网盘文件。",
-                                "确认移除",
+                                "只从追更中心移除《" + payload.name + "》。\n\n不会取消心愿，也不会删除网盘文件。",
+                                "取消追更",
                                 () -> listener.onAction(PREFIX + operation + ":" + token));
                     } else {
                         listener.onAction(PREFIX + operation + ":" + token);

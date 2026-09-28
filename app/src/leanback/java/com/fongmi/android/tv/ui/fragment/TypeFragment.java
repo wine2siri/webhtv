@@ -141,7 +141,7 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
         mViewModel.getResult().observe(getViewLifecycleOwner(), this::setAdapter);
         mViewModel.getAction().observe(getViewLifecycleOwner(), result -> {
             Notify.show(result.getMsg());
-            if ("_wishlist_actions_v2".equals(getTypeId())) onRefresh();
+            if ("_wishlist_actions_v2".equals(getTypeId()) || "_activity".equals(getTypeId())) onRefresh();
         });
     }
 
@@ -271,6 +271,12 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     @Override
     public boolean onLongClick(Vod item) {
+        if (item.isLongAction()) {
+            if (TrackingActionDialog.show(requireActivity(), item.getLongAction(), action -> mViewModel.action(getKey(), action))) return true;
+            if (WishlistActionDialog.show(requireActivity(), item.getLongAction(), action -> mViewModel.action(getKey(), action))) return true;
+            mViewModel.action(getKey(), item.getLongAction());
+            return true;
+        }
         if (item.isAction() || item.isFolder()) return false;
         CollectActivity.start(requireActivity(), item.getName());
         return true;

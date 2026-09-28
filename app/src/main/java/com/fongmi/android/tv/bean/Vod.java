@@ -70,6 +70,8 @@ public class Vod implements Parcelable, Diffable<Vod> {
     private String vodTag;
     @SerializedName("action")
     private String action;
+    @SerializedName("long_action")
+    private String longAction;
     @SerializedName("vod_episode_order")
     private String episodeOrder;
     @SerializedName("cate")
@@ -106,6 +108,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         this.vodPlayUrl = in.readString();
         this.vodTag = in.readString();
         this.action = in.readString();
+        this.longAction = in.readString();
         this.episodeOrder = in.readString();
         this.land = (Integer) in.readValue(Integer.class.getClassLoader());
         this.circle = (Integer) in.readValue(Integer.class.getClassLoader());
@@ -212,6 +215,10 @@ public class Vod implements Parcelable, Diffable<Vod> {
         return TextUtils.isEmpty(action) ? "" : action;
     }
 
+    public String getLongAction() {
+        return TextUtils.isEmpty(longAction) ? "" : longAction;
+    }
+
     public String getEpisodeOrder() {
         return TextUtils.isEmpty(episodeOrder) ? "" : episodeOrder;
     }
@@ -293,6 +300,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         copy.vodPlayUrl = vodPlayUrl;
         copy.vodTag = vodTag;
         copy.action = action;
+        copy.longAction = longAction;
         copy.episodeOrder = episodeOrder;
         copy.cate = cate;
         copy.style = style;
@@ -326,6 +334,10 @@ public class Vod implements Parcelable, Diffable<Vod> {
 
     public boolean isAction() {
         return !getAction().isEmpty();
+    }
+
+    public boolean isLongAction() {
+        return !getLongAction().isEmpty();
     }
 
     public void checkPic(String pic) {
@@ -403,6 +415,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
         dest.writeString(this.vodPlayUrl);
         dest.writeString(this.vodTag);
         dest.writeString(this.action);
+        dest.writeString(this.longAction);
         dest.writeString(this.episodeOrder);
         dest.writeValue(this.land);
         dest.writeValue(this.circle);
@@ -421,7 +434,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
 
     @Override
     public boolean isSameContent(Vod other) {
-        return getName().equals(other.getName()) && getPic().equals(other.getPic()) && getRemarks().equals(other.getRemarks()) && Objects.equals(getSite(), other.getSite()) && getSourceCount() == other.getSourceCount();
+        return getName().equals(other.getName()) && getPic().equals(other.getPic()) && getRemarks().equals(other.getRemarks()) && getAction().equals(other.getAction()) && getLongAction().equals(other.getLongAction()) && Objects.equals(getSite(), other.getSite()) && getSourceCount() == other.getSourceCount();
     }
 
     public static final Creator<Vod> CREATOR = new Creator<>() {
