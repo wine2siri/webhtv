@@ -209,6 +209,10 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     @Override
     public boolean onLongClick(Vod item) {
+        if ("injoy-aggregate-search".equals(item.getLongAction())) {
+            SearchActivity.start(requireActivity(), item.getName());
+            return true;
+        }
         if (item.isLongAction()) {
             if (TrackingActionDialog.show(requireActivity(), item.getLongAction(), action -> mViewModel.action(getKey(), action))) return true;
             if (WishlistActionDialog.show(requireActivity(), item.getLongAction(), action -> mViewModel.action(getKey(), action))) return true;
