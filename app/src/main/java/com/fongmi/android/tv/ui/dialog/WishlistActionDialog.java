@@ -46,6 +46,8 @@ public final class WishlistActionDialog {
             operations.add("cancel");
             labels.add("取关并删除网盘文件");
             operations.add("delete");
+            labels.add("移入封锁区（大人区）");
+            operations.add("hide");
         }
 
         String state = payload.exists ? "当前状态：" + statusText(payload) : "当前尚未订阅";
@@ -60,6 +62,8 @@ public final class WishlistActionDialog {
                         confirmCancel(activity, payload, token, listener);
                     } else if ("delete".equals(operation)) {
                         confirmDelete(activity, payload, token, listener);
+                    } else if ("hide".equals(operation)) {
+                        confirmHide(activity, payload, token, listener);
                     } else {
                         listener.onAction(PREFIX + operation + ":" + token);
                     }
@@ -83,6 +87,15 @@ public final class WishlistActionDialog {
                 "将取消《" + payload.name + "》的订阅，并把对应网盘目录移入回收站。\n\n此操作只允许删除与片名完全匹配的独立目录。",
                 "确认删除",
                 () -> listener.onAction(PREFIX + "delete:" + token));
+    }
+
+    private static void confirmHide(FragmentActivity activity, Payload payload, String token, Listener listener) {
+        ChoiceDialog.showConfirm(
+                activity.getSupportFragmentManager(),
+                "移入封锁区",
+                "隐藏《" + payload.name + "》？\n\n它将不再出现在电视导航和心愿墙；订阅任务与网盘文件不会删除，可在网页后台的“封锁区”恢复。",
+                "确认隐藏",
+                () -> listener.onAction(PREFIX + "hide:" + token));
     }
 
     private static String statusText(Payload payload) {
